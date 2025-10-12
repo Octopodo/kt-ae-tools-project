@@ -1,0 +1,28 @@
+{
+    "name": "kt-ae-tools-project",
+    "version": "1.0.0",
+    "description": "After Effects project utilities",
+    "author": "Miguel de Mendoza",
+    "main": "src/index.ts",
+    "license": "MIT",
+    "scripts": {
+        "build": "kt-build",
+        "build-tests": "kt-build build-tests",
+        "debug-build-tests": "kt-build debug-build-tests"
+    },
+    "files": [
+        "src",
+        "tsconfig.json"
+    ],
+    "dependencies": {
+        "kt-ae-is-checkers": "^1.0.0",
+        "kt-core": "*",
+        "kt-io": "^1.0.5",
+        "prettier": "^3.6.2"
+    },
+    "devDependencies": {
+        "kt-extendscript-builder": "*",
+        "kt-testing-suite-ae": "^1.0.0",
+        "kt-testing-suite-core": "^1.7.6"
+    }
+}
