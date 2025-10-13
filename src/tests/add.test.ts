@@ -1,11 +1,4 @@
-import {
-    describe,
-    it,
-    expect,
-    runTests,
-    beforeEach,
-    afterEach,
-} from "kt-testing-suite-core";
+import { describe, it, expect, runTests, beforeEach, afterEach, throwError } from "kt-testing-suite-core";
 import { KT_Project } from "../index";
 
 describe("KT_Project.add Tests", () => {
@@ -25,8 +18,8 @@ describe("KT_Project.add Tests", () => {
 
     it("should create a comp with default values", () => {
         const comp = KT_Project.add.comp({ name: "Default Comp" });
+        if (!comp) throwError("Comp creation failed");
         createdItems.push(comp);
-        expect(comp).toBeTruthy();
         expect(comp.name).toBe("Default Comp");
         expect(comp.width).toBe(1920);
         expect(comp.height).toBe(1080);
@@ -40,6 +33,8 @@ describe("KT_Project.add Tests", () => {
             frameRate: 30,
             duration: 5,
         });
+        if (!comp) throwError("Comp creation failed");
+
         createdItems.push(comp);
         expect(comp).toBeTruthy();
         expect(comp.name).toBe("Custom Comp");
@@ -53,8 +48,9 @@ describe("KT_Project.add Tests", () => {
         const folder = KT_Project.add.folder({ name: "Test Folder" });
         const comp = KT_Project.add.comp({
             name: "Test Comp",
-            folder: "//Test Folder",
+            parentFolder: "//Test Folder",
         });
+        if (!comp) throwError("Comp creation failed");
         createdItems.push(folder, comp);
         expect(comp).toBeTruthy();
         expect(comp.parentFolder).toBe(folder);
@@ -64,8 +60,9 @@ describe("KT_Project.add Tests", () => {
         const folder = KT_Project.add.folder({ name: "Test Folder 2" });
         const comp = KT_Project.add.comp({
             name: "Test Comp 2",
-            folder: folder,
+            parentFolder: folder,
         });
+        if (!comp) throwError("Comp creation failed");
         createdItems.push(folder, comp);
         expect(comp).toBeTruthy();
         expect(comp.parentFolder).toBe(folder);
@@ -73,6 +70,7 @@ describe("KT_Project.add Tests", () => {
 
     it("should create a folder", () => {
         const folder = KT_Project.add.folder({ name: "New Folder" });
+        if (!folder) throwError("Folder creation failed");
         createdItems.push(folder);
         expect(folder).toBeTruthy();
         expect(folder.name).toBe("New Folder");
@@ -82,7 +80,7 @@ describe("KT_Project.add Tests", () => {
         const parentFolder = KT_Project.add.folder({ name: "Parent Folder" });
         const childFolder = KT_Project.add.folder({
             name: "Child Folder",
-            parent: "//Parent Folder",
+            parentFolder: "//Parent Folder",
         });
         createdItems.push(parentFolder, childFolder);
         expect(childFolder).toBeTruthy();
@@ -93,7 +91,7 @@ describe("KT_Project.add Tests", () => {
         const parentFolder = KT_Project.add.folder({ name: "Parent Folder 2" });
         const childFolder = KT_Project.add.folder({
             name: "Child Folder 2",
-            parent: parentFolder,
+            parentFolder: parentFolder,
         });
         createdItems.push(parentFolder, childFolder);
         expect(childFolder).toBeTruthy();

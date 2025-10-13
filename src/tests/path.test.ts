@@ -1,11 +1,4 @@
-import {
-    describe,
-    it,
-    expect,
-    runTests,
-    beforeEach,
-    afterEach,
-} from "kt-testing-suite-core";
+import { describe, it, expect, runTests, beforeEach, afterEach, throwError } from "kt-testing-suite-core";
 import { KT_AeProjectPath } from "../path";
 import { KT_Project } from "../index";
 
@@ -26,6 +19,7 @@ describe("KT_AeProjectPath Tests", () => {
 
     it("should get path of a root item", () => {
         const comp = KT_Project.add.comp({ name: "Path Comp" });
+        if (!comp) throwError("Comp creation failed");
         createdItems.push(comp);
         const path = KT_AeProjectPath.get(comp);
         expect(path).toBe("//Path Comp");
@@ -35,8 +29,9 @@ describe("KT_AeProjectPath Tests", () => {
         const folder = KT_Project.add.folder({ name: "Parent" });
         const comp = KT_Project.add.comp({
             name: "Child Comp",
-            folder: folder,
+            parentFolder: folder,
         });
+        if (!comp) throwError("Comp creation failed");
         createdItems.push(folder, comp);
         const path = KT_AeProjectPath.get(comp);
         expect(path).toBe("//Parent//Child Comp");
@@ -54,19 +49,14 @@ describe("KT_AeProjectPath Tests", () => {
 
     it("should resolve a path to an item", () => {
         const comp = KT_Project.add.comp({ name: "Resolve Comp" });
+        if (!comp) throwError("Comp creation failed");
         createdItems.push(comp);
-        const resolved = KT_AeProjectPath.resolve(
-            app.project.rootFolder,
-            "//Resolve Comp"
-        );
+        const resolved = KT_AeProjectPath.resolve(app.project.rootFolder, "//Resolve Comp");
         expect(resolved).toBe(comp);
     });
 
     it("should return null for invalid path", () => {
-        const resolved = KT_AeProjectPath.resolve(
-            app.project.rootFolder,
-            "//Invalid"
-        );
+        const resolved = KT_AeProjectPath.resolve(app.project.rootFolder, "//Invalid");
         expect(resolved).toBe(null);
     });
 
@@ -92,6 +82,7 @@ describe("KT_AeProjectPath Tests", () => {
 
     it("should get item by path", () => {
         const comp = KT_Project.add.comp({ name: "Get Item Comp" });
+        if (!comp) throwError("Comp creation failed");
         createdItems.push(comp);
         const item = KT_AeProjectPath.getItem("//Get Item Comp");
         expect(item).toBe(comp);

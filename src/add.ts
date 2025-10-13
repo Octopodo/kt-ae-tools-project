@@ -1,9 +1,11 @@
+import { KT_Path as path } from "kt-io";
 import { KT_ProjectMove as move } from "./move";
-import { KT_AeProjectPath } from "./path";
+import { KT_AeIs as is } from "kt-ae-is-checkers";
+import { KT_ProjectFind as find } from "./find";
 
 type CompOptions = {
     name: string;
-    folder?: FolderItem | string;
+    parentFolder?: FolderItem | string;
     width?: number;
     height?: number;
     pixelAspect?: number;
@@ -13,7 +15,7 @@ type CompOptions = {
 
 type FolderOptions = {
     name: string;
-    parent?: FolderItem | string;
+    parentFolder?: FolderItem | string;
 };
 
 class __KT_ProjectAdd {
@@ -28,88 +30,82 @@ class __KT_ProjectAdd {
     private __MAX_COMP_PIXEL_ASPECT = 10;
     private __MIN_COMP_PIXEL_ASPECT = 0.1;
 
-    private __sanitzeCompValues(
-        width: number,
-        height: number,
-        pixelAspect: number,
-        frameRate: number,
-        duration: number
-    ) {
-        width = Math.min(Math.floor(width), this.__MAX_COMP_WIDTH);
-        height = Math.min(Math.floor(height), this.__MAX_COMP_HEIGHT);
-        pixelAspect = Math.min(pixelAspect, this.__MAX_COMP_PIXEL_ASPECT);
-        frameRate = Math.min(Math.floor(frameRate), this.__MAX_COMP_FRAME_RATE);
-        duration = Math.min(Math.floor(duration), this.__MAX_COMP_DURATION);
-        width = Math.max(width, this.__MIN_COMP_WIDTH);
-        height = Math.max(height, this.__MIN_COMP_HEIGHT);
-        pixelAspect = Math.max(pixelAspect, this.__MIN_COMP_PIXEL_ASPECT);
-        frameRate = Math.max(frameRate, this.__MIN_COMP_FRAME_RATE);
-        duration = Math.max(duration, this.__MIN_COMP_DURATION);
-        return { width, height, pixelAspect, frameRate, duration };
+    //TODO: move these defaults to a config file. Implement defaults system
+    private __DEFAULT_COMP_WIDTH = 1920;
+    private __DEFAULT_COMP_HEIGHT = 1080;
+    private __DEFAULT_COMP_PIXEL_ASPECT = 1;
+    private __DEFAULT_COMP_FRAME_RATE = 25;
+    private __DEFAULT_COMP_DURATION = 10;
+
+    private __sanitzeCompValues(options: CompOptions): CompOptions {
+        options.width = options.width || this.__DEFAULT_COMP_WIDTH;
+        options.height = options.height || this.__DEFAULT_COMP_HEIGHT;
+        options.pixelAspect = options.pixelAspect || this.__DEFAULT_COMP_PIXEL_ASPECT;
+        options.frameRate = options.frameRate || this.__DEFAULT_COMP_FRAME_RATE;
+        options.duration = options.duration || this.__DEFAULT_COMP_DURATION;
+
+        options.width = Math.min(Math.floor(options.width), this.__MAX_COMP_WIDTH);
+        options.height = Math.min(Math.floor(options.height), this.__MAX_COMP_HEIGHT);
+        options.pixelAspect = Math.min(options.pixelAspect, this.__MAX_COMP_PIXEL_ASPECT);
+        options.frameRate = Math.min(Math.floor(options.frameRate), this.__MAX_COMP_FRAME_RATE);
+        options.duration = Math.min(Math.floor(options.duration), this.__MAX_COMP_DURATION);
+        options.width = Math.max(options.width, this.__MIN_COMP_WIDTH);
+        options.height = Math.max(options.height, this.__MIN_COMP_HEIGHT);
+        options.pixelAspect = Math.max(options.pixelAspect, this.__MIN_COMP_PIXEL_ASPECT);
+        options.frameRate = Math.max(options.frameRate, this.__MIN_COMP_FRAME_RATE);
+        options.duration = Math.max(options.duration, this.__MIN_COMP_DURATION);
+        return options;
     }
 
-    comp(options: CompOptions) {
-        const name = options.name;
-        let targetFolder: FolderItem = app.project.rootFolder;
-        if (options.folder) {
-            if (typeof options.folder === "string") {
-                const resolved = KT_AeProjectPath.resolve(
-                    app.project.rootFolder,
-                    options.folder
-                );
-                if (resolved && resolved instanceof FolderItem) {
-                    targetFolder = resolved as FolderItem;
-                }
-            } else {
-                targetFolder = options.folder;
-            }
+    private __moveToFolder(item: _ItemClasses, options: CompOptions | FolderOptions) {
+        if (!options.parentFolder) return;
+        let targetFolder: FolderItem | false = false;
+        if (is.folder(options.parentFolder)) {
+            targetFolder = options.parentFolder;
+        } else {
+            const folders = find.folders({ name: options.parentFolder as string });
+            if (!folders || folders.length === 0) return;
+            targetFolder = folders[0];
         }
+        move.move(item, targetFolder);
+    }
 
-        const width = options.width || 1920;
-        const height = options.height || 1080;
-        const pixelAspect = options.pixelAspect || 1;
-        const frameRate = options.frameRate || 25;
-        const duration = options.duration || 10;
-
-        const {
-            width: w,
-            height: h,
-            pixelAspect: pa,
-            frameRate: fr,
-            duration: du,
-        } = this.__sanitzeCompValues(
-            width,
-            height,
-            pixelAspect,
-            frameRate,
-            duration
+    comp(options: CompOptions): CompItem | false {
+        const name = options.name;
+        options = this.__sanitzeCompValues(options);
+        const comp = app.project.items.addComp(
+            name,
+            options.width!,
+            options.height!,
+            options.pixelAspect!,
+            options.duration!,
+            options.frameRate!
         );
-
-        const comp = app.project.items.addComp(name, w, h, pa, du, fr);
-        move.move(comp, targetFolder);
+        this.__moveToFolder(comp, options);
 
         return comp;
     }
 
-    folder(options: FolderOptions): FolderItem {
-        const name = options.name;
-        let targetParent: FolderItem = app.project.rootFolder;
-        if (options.parent) {
-            if (typeof options.parent === "string") {
-                const resolved = KT_AeProjectPath.resolve(
-                    app.project.rootFolder,
-                    options.parent
-                );
-                if (resolved && resolved instanceof FolderItem) {
-                    targetParent = resolved as FolderItem;
-                }
-            } else {
-                targetParent = options.parent;
-            }
-        }
+    compFromFootage(footage: _ItemClasses, options: CompOptions): CompItem | false {
+        if (!is.footage(footage)) return false;
+        options.name = path.stripFileExtension(footage.name) || "Comp";
+        options.width = footage.width;
+        options.height = footage.height;
+        options.pixelAspect = footage.pixelAspect;
+        options.duration = is.image(footage) ? footage.duration : this.__DEFAULT_COMP_DURATION;
+        options.frameRate = footage.frameRate;
 
-        const folder = app.project.items.addFolder(name);
-        move.move(folder, targetParent);
+        const parsedOptions = this.__sanitzeCompValues(options);
+
+        const comp = this.comp(parsedOptions);
+        if (!is.comp(comp)) return false;
+        comp.layers.add(footage);
+        return comp;
+    }
+
+    folder(options: FolderOptions): FolderItem {
+        const folder = app.project.items.addFolder(options.name);
+        this.__moveToFolder(folder, options);
 
         return folder;
     }

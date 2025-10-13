@@ -17,10 +17,7 @@ class __KT_AeProjectPath {
     get(item: _ItemClasses): string {
         const parts: string[] = [];
         let current: _ItemClasses = item;
-        while (
-            current.parentFolder &&
-            !(current.parentFolder instanceof Project)
-        ) {
+        while (current.parentFolder && !(current.parentFolder instanceof Project)) {
             parts.unshift(current.name);
             current = current.parentFolder as _ItemClasses;
         }
@@ -34,10 +31,7 @@ class __KT_AeProjectPath {
 
     traverse(
         root: Project | FolderItem,
-        callback: (item: _ItemClasses, collection: ItemCollection) => void = (
-            item,
-            collection
-        ) => {}
+        callback: (item: _ItemClasses, collection: ItemCollection) => void = (item, collection) => {}
     ) {
         const length = root.numItems;
 
@@ -50,10 +44,7 @@ class __KT_AeProjectPath {
         }
     }
 
-    getComps(
-        root: Project | FolderItem,
-        matcher: (item: _ItemClasses) => boolean
-    ): CompItem[] {
+    getComps(root: Project | FolderItem, matcher: (item: _ItemClasses) => boolean): CompItem[] {
         const comps: CompItem[] = [];
         this.traverse(root, (item, collection) => {
             if (item instanceof CompItem && matcher(item)) {
@@ -63,10 +54,7 @@ class __KT_AeProjectPath {
         return comps;
     }
 
-    getFolders(
-        root: Project | FolderItem,
-        matcher: (item: _ItemClasses) => boolean
-    ): FolderItem[] {
+    getFolders(root: Project | FolderItem, matcher: (item: _ItemClasses) => boolean): FolderItem[] {
         const folders: FolderItem[] = [];
         this.traverse(root, (item, collection) => {
             if (item instanceof FolderItem && matcher(item)) {
@@ -93,10 +81,7 @@ class __KT_AeProjectPath {
         let current: Project | FolderItem = root;
 
         for (const segment of segments) {
-            if (
-                !(current instanceof FolderItem) &&
-                !(current instanceof Project)
-            ) {
+            if (!(current instanceof FolderItem) && !(current instanceof Project)) {
                 return null; // Invalid, not a container
             }
 
@@ -150,18 +135,12 @@ class __KT_AeProjectPath {
 
     normalize(path: string): string {
         // Remove leading/trailing separators, collapse multiple separators
-        let normalized = path.replace(
-            new RegExp(this.separator + "+", "g"),
-            this.separator
-        );
+        let normalized = path.replace(new RegExp(this.separator + "+", "g"), this.separator);
         if (normalized.indexOf(this.separator) === 0) {
             normalized = normalized.slice(this.separator.length);
         }
         const sepLen = this.separator.length;
-        if (
-            normalized.lastIndexOf(this.separator) ===
-            normalized.length - sepLen
-        ) {
+        if (normalized.lastIndexOf(this.separator) === normalized.length - sepLen) {
             normalized = normalized.slice(0, -sepLen);
         }
         return this.separator + normalized;
@@ -191,6 +170,10 @@ class __KT_AeProjectPath {
 
     getItem(path: string): _ItemClasses | null {
         return this.resolve(app.project.rootFolder, path);
+    }
+
+    isPath(path: string): boolean {
+        return path.indexOf(this.separator) === 0;
     }
 }
 

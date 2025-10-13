@@ -10,7 +10,8 @@
             "name": "Build & Run Tests",
             "script": "${workspaceFolder}/dist.test/index.test.js",
             "hiddenTypes": ["prototype"],
-            "preLaunchTask": "Build Tests"
+            "preLaunchTask": "Build Tests",
+            "hostAppSpecifier": "aftereffects"
         },
         {
             "type": "extendscript-debug",
@@ -18,14 +19,16 @@
             "name": "Debug Build & Run Tests",
             "script": "${workspaceFolder}/dist.test/index.test.js",
             "hiddenTypes": ["prototype"],
-            "preLaunchTask": "Debug Build Tests"
+            "preLaunchTask": "Debug Build Tests",
+            "hostAppSpecifier": "aftereffects"
         },
         {
             "type": "extendscript-debug",
             "request": "launch",
             "name": "Run Tests",
             "script": "${workspaceFolder}/dist.test/index.test.js",
-            "hiddenTypes": ["prototype"]
+            "hiddenTypes": ["prototype"],
+            "hostAppSpecifier": "aftereffects"
         }
     ]
 }

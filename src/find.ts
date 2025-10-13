@@ -1,4 +1,4 @@
-import { KT_AeProjectPath } from "./path";
+import { KT_AeProjectPath as pPath } from "./path";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
 
 type FindProjectOptions = {
@@ -12,8 +12,8 @@ function getRoot(options: FindProjectOptions): FolderItem {
     return options.root || app.project.rootFolder;
 }
 
-class __KT_ProjectFind {
-    private isInSubtree(item: _ItemClasses, root: FolderItem): boolean {
+class KT_ProjectFind {
+    private static isInSubtree(item: _ItemClasses, root: FolderItem): boolean {
         let current: FolderItem | Project = item.parentFolder;
         while (current) {
             if (current === root) return true;
@@ -23,20 +23,41 @@ class __KT_ProjectFind {
         return false;
     }
 
-    item(
-        options: FindProjectOptions = { root: app.project.rootFolder }
-    ): _ItemClasses[] | Boolean {
+    private static _normalizeOptions(options: FindProjectOptions | number | string): FindProjectOptions {
+        const normalized: FindProjectOptions = {};
+        if (typeof options === "number") {
+            normalized.id = options;
+        } else if (typeof options === "string") {
+            if (pPath.isPath(options)) {
+                normalized.path = options;
+            } else {
+                normalized.name = options;
+            }
+        } else {
+            normalized.name = options.name;
+            normalized.id = options.id;
+            normalized.path = options.path;
+            normalized.root = options.root;
+        }
+        return normalized;
+    }
+
+    private static _findItems<T extends _ItemClasses>(
+        typeChecker: (item: _ItemClasses) => item is T,
+        options: FindProjectOptions | number | string
+    ): T[] {
+        options = this._normalizeOptions(options);
         const root = getRoot(options);
-        const items: _ItemClasses[] = [];
+        const items: T[] = [];
         if (options.id) {
             try {
                 const item = app.project.itemByID(options.id);
                 if (
                     item &&
-                    this.isInSubtree(item, root) &&
+                    KT_ProjectFind.isInSubtree(item, root) &&
+                    typeChecker(item) &&
                     (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
+                    (!options.path || pPath.get(item) === options.path)
                 ) {
                     items.push(item);
                 }
@@ -45,272 +66,64 @@ class __KT_ProjectFind {
             for (let i = 1; i <= app.project.numItems; i++) {
                 const item = app.project.item(i);
                 if (
-                    this.isInSubtree(item, root) &&
+                    KT_ProjectFind.isInSubtree(item, root) &&
+                    typeChecker(item) &&
                     (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
+                    (!options.path || pPath.get(item) === options.path)
                 ) {
                     items.push(item);
                 }
             }
         }
+        return items;
+    }
+
+    static items(options: FindProjectOptions | number | string): _ItemClasses[] | false {
+        const items = KT_ProjectFind._findItems(is.item, options);
         return items.length > 0 ? items : false;
     }
 
-    folder(
-        options: FindProjectOptions = { root: app.project.rootFolder }
-    ): FolderItem | FolderItem[] | Boolean {
-        const root = getRoot(options);
-        const folders: FolderItem[] = [];
-        if (options.id) {
-            try {
-                const item = app.project.itemByID(options.id);
-                if (
-                    item &&
-                    is.folder(item) &&
-                    this.isInSubtree(item, root) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    folders.push(item as FolderItem);
-                }
-            } catch (e) {}
-        } else {
-            for (let i = 1; i <= app.project.numItems; i++) {
-                const item = app.project.item(i);
-                if (
-                    this.isInSubtree(item, root) &&
-                    is.folder(item) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    folders.push(item as FolderItem);
-                }
-            }
-        }
+    static folders(options: FindProjectOptions | number | string): FolderItem[] | false {
+        const items = KT_ProjectFind._findItems(is.folder, options);
+        const folders = items as FolderItem[];
         if (folders.length === 0) return false;
-        if (options.name || options.id || options.path) return folders[0];
         return folders;
     }
 
-    comp(
-        options: FindProjectOptions = { root: app.project.rootFolder }
-    ): CompItem[] | Boolean {
-        const root = getRoot(options);
-        const comps: CompItem[] = [];
-        if (options.id) {
-            try {
-                const item = app.project.itemByID(options.id);
-                if (
-                    item &&
-                    is.comp(item) &&
-                    this.isInSubtree(item, root) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    comps.push(item as CompItem);
-                }
-            } catch (e) {}
-        } else {
-            for (let i = 1; i <= app.project.numItems; i++) {
-                const item = app.project.item(i);
-                if (
-                    this.isInSubtree(item, root) &&
-                    is.comp(item) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    comps.push(item as CompItem);
-                }
-            }
-        }
+    static comps(options: FindProjectOptions | number | string): CompItem[] | false {
+        const items = KT_ProjectFind._findItems(is.comp, options);
+        const comps = items as CompItem[];
         return comps.length > 0 ? comps : false;
     }
 
-    footage(
-        options: FindProjectOptions = { root: app.project.rootFolder }
-    ): FootageItem[] | Boolean {
-        const root = getRoot(options);
-        const footage: FootageItem[] = [];
-        if (options.id) {
-            try {
-                const item = app.project.itemByID(options.id);
-                if (
-                    item &&
-                    is.footage(item) &&
-                    this.isInSubtree(item, root) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    footage.push(item as FootageItem);
-                }
-            } catch (e) {}
-        } else {
-            for (let i = 1; i <= app.project.numItems; i++) {
-                const item = app.project.item(i);
-                if (
-                    this.isInSubtree(item, root) &&
-                    is.footage(item) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    footage.push(item as FootageItem);
-                }
-            }
-        }
+    static footage(options: FindProjectOptions | number | string): FootageItem[] | false {
+        const items = KT_ProjectFind._findItems(is.footage, options);
+        const footage = items as FootageItem[];
         return footage.length > 0 ? footage : false;
     }
 
-    audio(
-        options: FindProjectOptions = { root: app.project.rootFolder }
-    ): FootageItem[] | Boolean {
-        const root = getRoot(options);
-        const audio: FootageItem[] = [];
-        if (options.id) {
-            try {
-                const item = app.project.itemByID(options.id);
-                if (
-                    item &&
-                    is.audio(item) &&
-                    this.isInSubtree(item, root) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    audio.push(item as FootageItem);
-                }
-            } catch (e) {}
-        } else {
-            for (let i = 1; i <= app.project.numItems; i++) {
-                const item = app.project.item(i);
-                if (
-                    this.isInSubtree(item, root) &&
-                    is.audio(item) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    audio.push(item as FootageItem);
-                }
-            }
-        }
+    static audios(options: FindProjectOptions | number | string): FootageItem[] | false {
+        const items = KT_ProjectFind._findItems(is.audio, options);
+        const audio = items as FootageItem[];
         return audio.length > 0 ? audio : false;
     }
 
-    video(
-        options: FindProjectOptions = { root: app.project.rootFolder }
-    ): FootageItem[] | Boolean {
-        const root = getRoot(options);
-        const video: FootageItem[] = [];
-        if (options.id) {
-            try {
-                const item = app.project.itemByID(options.id);
-                if (
-                    item &&
-                    is.video(item) &&
-                    this.isInSubtree(item, root) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    video.push(item as FootageItem);
-                }
-            } catch (e) {}
-        } else {
-            for (let i = 1; i <= app.project.numItems; i++) {
-                const item = app.project.item(i);
-                if (
-                    this.isInSubtree(item, root) &&
-                    is.video(item) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    video.push(item as FootageItem);
-                }
-            }
-        }
+    static videos(options: FindProjectOptions | number | string): FootageItem[] | false {
+        const items = KT_ProjectFind._findItems(is.video, options);
+        const video = items as FootageItem[];
         return video.length > 0 ? video : false;
     }
 
-    image(
-        options: FindProjectOptions = { root: app.project.rootFolder }
-    ): FootageItem[] | Boolean {
-        const root = getRoot(options);
-        const images: FootageItem[] = [];
-        if (options.id) {
-            try {
-                const item = app.project.itemByID(options.id);
-                if (
-                    item &&
-                    is.image(item) &&
-                    this.isInSubtree(item, root) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    images.push(item as FootageItem);
-                }
-            } catch (e) {}
-        } else {
-            for (let i = 1; i <= app.project.numItems; i++) {
-                const item = app.project.item(i);
-                if (
-                    this.isInSubtree(item, root) &&
-                    is.image(item) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    images.push(item as FootageItem);
-                }
-            }
-        }
+    static images(options: FindProjectOptions | number | string): FootageItem[] | false {
+        const items = KT_ProjectFind._findItems(is.image, options);
+        const images = items as FootageItem[];
         return images.length > 0 ? images : false;
     }
 
-    solid(
-        options: FindProjectOptions = { root: app.project.rootFolder }
-    ): _ItemClasses[] | Boolean {
-        const root = getRoot(options);
-        const solids: _ItemClasses[] = [];
-        if (options.id) {
-            try {
-                const item = app.project.itemByID(options.id);
-                if (
-                    item &&
-                    is.solid(item) &&
-                    this.isInSubtree(item, root) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    solids.push(item);
-                }
-            } catch (e) {}
-        } else {
-            for (let i = 1; i <= app.project.numItems; i++) {
-                const item = app.project.item(i);
-                if (
-                    this.isInSubtree(item, root) &&
-                    is.solid(item) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path ||
-                        KT_AeProjectPath.get(item) === options.path)
-                ) {
-                    solids.push(item);
-                }
-            }
-        }
-        return solids.length > 0 ? solids : false;
+    static solids(options: FindProjectOptions | number | string): _ItemClasses[] | false {
+        const items = KT_ProjectFind._findItems(is.solid, options);
+        return items.length > 0 ? items : false;
     }
 }
 
-const KT_ProjectFind = new __KT_ProjectFind();
 export { KT_ProjectFind };
