@@ -1,230 +1,107 @@
 import { KT_AeIs as is } from "kt-ae-is-checkers";
+import { KT_ProjectAdd as add } from "./add";
+import { KT_ProjectMove as move } from "./move";
 import { KT_AeProjectPath as path } from "./path";
+import { KT_ProjectFind as find } from "./find";
 
 class __KT_ProjectDuplicate {
-    private __duplicateComp(comp: CompItem): CompItem | false {
-        try {
-            const newComp = app.project.items.addComp(
-                comp.name + " copy",
-                comp.width,
-                comp.height,
-                comp.pixelAspect,
-                comp.duration,
-                comp.frameRate
-            );
-            newComp.bgColor = comp.bgColor;
-            newComp.resolutionFactor = comp.resolutionFactor;
-            newComp.shutterAngle = comp.shutterAngle;
-            newComp.shutterPhase = comp.shutterPhase;
-            newComp.motionBlur = comp.motionBlur;
-            newComp.draft3d = comp.draft3d;
-            newComp.frameBlending = comp.frameBlending;
-            newComp.preserveNestedFrameRate = comp.preserveNestedFrameRate;
-            newComp.preserveNestedResolution = comp.preserveNestedResolution;
-            return newComp;
-        } catch (e) {
-            return false;
-        }
-    }
+    private __duplicateComp = (comp: CompItem): CompItem | false => {
+        return comp.duplicate() as CompItem;
+    };
 
-    private __duplicateFolder(folder: FolderItem): FolderItem | false {
-        try {
-            const newFolder = app.project.items.addFolder(
-                folder.name + " copy"
-            );
-            return newFolder;
-        } catch (e) {
-            return false;
+    private __duplicateFolder = (folder: FolderItem): FolderItem | false => {
+        const newFolder = add.folder({ name: folder.name + " copy", parentFolder: folder.parentFolder });
+        for (let i = 1; i <= folder.numItems; i++) {
+            const item = this.__duplicateItems([folder.item(i)], "item");
+            if (item.length > 0) {
+                item[0].parentFolder = newFolder;
+            }
         }
-    }
+        return newFolder;
+    };
 
-    private __duplicateFootage(footage: FootageItem): FootageItem | false {
-        try {
-            if (footage.mainSource instanceof FileSource) {
-                const file = footage.mainSource.file;
-                const importOptions = new ImportOptions(file);
-                const newFootage = app.project.importFile(importOptions);
-                if (newFootage) {
-                    newFootage.name = footage.name + " copy";
-                    return newFootage as FootageItem;
+    private __duplicateFootage = (footage: FootageItem): FootageItem | false => {
+        return false;
+    };
+
+    private __duplicateItems = (items: any[], typeChecker: string): _ItemClasses[] => {
+        const duplicates: _ItemClasses[] = [];
+
+        for (const item of items) {
+            const checker = is[typeChecker as keyof typeof is];
+            if (!checker || !checker(item)) {
+                continue;
+            }
+            let duplicator = "__duplicate" + typeChecker.charAt(0).toUpperCase() + typeChecker.slice(1);
+            if (typeof (this as any)[duplicator] === "function") {
+                const dup = (this as any)[duplicator](item);
+                dup.parentFolder = item.parentFolder;
+                if (dup) {
+                    duplicates.push(dup);
                 }
-            } else if (footage.mainSource instanceof SolidSource) {
-                const solid = footage.mainSource;
-                const newSolid = (app.project.items as any).addSolid(
-                    solid.color,
-                    footage.name + " copy",
-                    footage.width,
-                    footage.height,
-                    footage.pixelAspect,
-                    footage.duration
-                );
-                return newSolid;
             }
-            return false;
-        } catch (e) {
-            return false;
         }
-    }
+        return duplicates;
+    };
 
-    comp(
-        itemOrItemsOrPath: _ItemClasses | _ItemClasses[] | string
-    ): CompItem | CompItem[] | false {
-        let itemsToDuplicate: CompItem[] = [];
-        if (typeof itemOrItemsOrPath === "string") {
-            const resolved = path.getComps(
-                app.project.rootFolder,
-                itemOrItemsOrPath
-            );
-            if (!resolved) return false;
-            itemsToDuplicate = [resolved ];
-        } else if (itemOrItemsOrPath instanceof Array) {
-            for (let i = 0; i < itemOrItemsOrPath.length; i++) {
-                const item = itemOrItemsOrPath[i];
-                if (is.comp(item)) itemsToDuplicate.push(item as CompItem);
+    comps = (items: _ItemClasses | _ItemClasses[] | string): CompItem[] => {
+        const selectedItems = this.__selectItems(items, "comps");
+        return this.__duplicateItems(selectedItems, "comp") as CompItem[];
+    };
+
+    folders = (items: _ItemClasses | _ItemClasses[] | string): FolderItem[] => {
+        const selectedItems = this.__selectItems(items, "folders");
+        return this.__duplicateItems(selectedItems, "folder") as FolderItem[];
+    };
+
+    footage = (items: _ItemClasses | _ItemClasses[] | string): FootageItem[] => {
+        const selectedItems = this.__selectItems(items, "footage");
+        return this.__duplicateItems(selectedItems, "footage") as FootageItem[];
+    };
+
+    videos = (items: _ItemClasses | _ItemClasses[] | string): FootageItem[] => {
+        const selectedItems = this.__selectItems(items, "videos");
+        return this.__duplicateItems(selectedItems, "video") as FootageItem[];
+    };
+
+    audio = (items: _ItemClasses | _ItemClasses[] | string): FootageItem[] => {
+        const selectedItems = this.__selectItems(items, "audios");
+        return this.__duplicateItems(selectedItems, "audio") as FootageItem[];
+    };
+
+    images = (items: _ItemClasses | _ItemClasses[] | string): FootageItem | FootageItem[] | false => {
+        const selectedItems = this.__selectItems(items, "images");
+        return this.__duplicateItems(selectedItems, "image") as FootageItem | FootageItem[] | false;
+    };
+
+    solids = (items: _ItemClasses | _ItemClasses[] | string): FootageItem | FootageItem[] | false => {
+        const selectedItems = this.__selectItems(items, "solids");
+        return this.__duplicateItems(selectedItems, "solid") as FootageItem | FootageItem[] | false;
+    };
+
+    items = (items: _ItemClasses | _ItemClasses[] | string): _ItemClasses[] => {
+        const selectedItems = this.__selectItems(items, "items");
+        return this.__duplicateItems(selectedItems, "item") as _ItemClasses[];
+    };
+
+    private __selectItems = (
+        items: _ItemClasses | _ItemClasses[] | string | string[],
+        findType: string
+    ): _ItemClasses[] => {
+        const itemsArray = items instanceof Array ? items : [items];
+        const selectedItems: _ItemClasses[] = [];
+        for (const item of itemsArray) {
+            if (typeof item === "string") {
+                if (typeof (find as any)[findType] === "function") {
+                    const foundItems = (find as any)[findType](item);
+                    selectedItems.push(...foundItems);
+                }
+            } else {
+                selectedItems.push(item);
             }
-        } else {
-            if (!is.comp(itemOrItemsOrPath)) return false;
-            itemsToDuplicate = [itemOrItemsOrPath as CompItem];
         }
-
-        const duplicated: CompItem[] = [];
-        for (const item of itemsToDuplicate) {
-            const dup = this.__duplicateComp(item);
-            if (dup) duplicated.push(dup);
-        }
-        return duplicated.length === 1
-            ? duplicated[0]
-            : duplicated.length > 0
-              ? duplicated
-              : false;
-    }
-
-    folder(
-        itemOrItemsOrPath: _ItemClasses | _ItemClasses[] | string
-    ): FolderItem | FolderItem[] | false {
-        let itemsToDuplicate: FolderItem[] = [];
-        if (typeof itemOrItemsOrPath === "string") {
-            const resolved = path.resolve(
-                app.project.rootFolder,
-                itemOrItemsOrPath
-            );
-            if (!resolved || !is.folder(resolved)) return false;
-            itemsToDuplicate = [resolved as FolderItem];
-        } else if (itemOrItemsOrPath instanceof Array) {
-            for (let i = 0; i < itemOrItemsOrPath.length; i++) {
-                const item = itemOrItemsOrPath[i];
-                if (is.folder(item)) itemsToDuplicate.push(item as FolderItem);
-            }
-        } else {
-            if (!is.folder(itemOrItemsOrPath)) return false;
-            itemsToDuplicate = [itemOrItemsOrPath as FolderItem];
-        }
-
-        const duplicated: FolderItem[] = [];
-        for (const item of itemsToDuplicate) {
-            const dup = this.__duplicateFolder(item);
-            if (dup) duplicated.push(dup);
-        }
-        return duplicated.length === 1
-            ? duplicated[0]
-            : duplicated.length > 0
-              ? duplicated
-              : false;
-    }
-
-    footage(
-        itemOrItemsOrPath: _ItemClasses | _ItemClasses[] | string
-    ): FootageItem | FootageItem[] | false {
-        let itemsToDuplicate: FootageItem[] = [];
-        if (typeof itemOrItemsOrPath === "string") {
-            const resolved = path.resolve(
-                app.project.rootFolder,
-                itemOrItemsOrPath
-            );
-            if (!resolved || !is.footage(resolved)) return false;
-            itemsToDuplicate = [resolved as FootageItem];
-        } else if (itemOrItemsOrPath instanceof Array) {
-            for (let i = 0; i < itemOrItemsOrPath.length; i++) {
-                const item = itemOrItemsOrPath[i];
-                if (is.footage(item))
-                    itemsToDuplicate.push(item as FootageItem);
-            }
-        } else {
-            if (!is.footage(itemOrItemsOrPath)) return false;
-            itemsToDuplicate = [itemOrItemsOrPath as FootageItem];
-        }
-
-        const duplicated: FootageItem[] = [];
-        for (const item of itemsToDuplicate) {
-            const dup = this.__duplicateFootage(item);
-            if (dup) duplicated.push(dup);
-        }
-        return duplicated.length === 1
-            ? duplicated[0]
-            : duplicated.length > 0
-              ? duplicated
-              : false;
-    }
-
-    video(
-        itemOrItemsOrPath: _ItemClasses | _ItemClasses[] | string
-    ): FootageItem | FootageItem[] | false {
-        return this.footage(itemOrItemsOrPath); // Video is a type of footage
-    }
-
-    audio(
-        itemOrItemsOrPath: _ItemClasses | _ItemClasses[] | string
-    ): FootageItem | FootageItem[] | false {
-        return this.footage(itemOrItemsOrPath); // Audio is a type of footage
-    }
-
-    image(
-        itemOrItemsOrPath: _ItemClasses | _ItemClasses[] | string
-    ): FootageItem | FootageItem[] | false {
-        return this.footage(itemOrItemsOrPath); // Image is a type of footage
-    }
-
-    solid(
-        itemOrItemsOrPath: _ItemClasses | _ItemClasses[] | string
-    ): FootageItem | FootageItem[] | false {
-        return this.footage(itemOrItemsOrPath); // Solid is a type of footage
-    }
-
-    item(
-        itemOrItemsOrPath: _ItemClasses | _ItemClasses[] | string
-    ): _ItemClasses | _ItemClasses[] | false {
-        let itemsToDuplicate: _ItemClasses[] = [];
-        if (typeof itemOrItemsOrPath === "string") {
-            const resolved = path.resolve(
-                app.project.rootFolder,
-                itemOrItemsOrPath
-            );
-            if (!resolved) return false;
-            itemsToDuplicate = [resolved];
-        } else if (itemOrItemsOrPath instanceof Array) {
-            itemsToDuplicate = itemOrItemsOrPath;
-        } else {
-            itemsToDuplicate = [itemOrItemsOrPath];
-        }
-
-        const duplicated: _ItemClasses[] = [];
-        for (const item of itemsToDuplicate) {
-            let dup: _ItemClasses | false = false;
-            if (is.comp(item)) {
-                dup = this.__duplicateComp(item as CompItem);
-            } else if (is.folder(item)) {
-                dup = this.__duplicateFolder(item as FolderItem);
-            } else if (is.footage(item)) {
-                dup = this.__duplicateFootage(item as FootageItem);
-            }
-            if (dup) duplicated.push(dup);
-        }
-        return duplicated.length === 1
-            ? duplicated[0]
-            : duplicated.length > 0
-              ? duplicated
-              : false;
-    }
+        return selectedItems;
+    };
 }
 
 const KT_ProjectDuplicate = new __KT_ProjectDuplicate();
