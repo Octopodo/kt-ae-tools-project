@@ -8,10 +8,7 @@ class __KT_ProjectRemove {
      * @param items - The item(s) to remove. Can be a single item, an array of items, or a path string.
      * @returns true if all removals succeeded, false otherwise.
      */
-    remove(
-        items: _ItemClasses | _ItemClasses[] | string,
-        checker: (item: any) => boolean
-    ): boolean {
+    remove = (items: _ItemClasses | _ItemClasses[] | string, checker: (item: any) => boolean): boolean => {
         // Resolve items to remove
         let itemsToRemove: _ItemClasses[] = [];
         if (typeof items === "string") {
@@ -40,36 +37,36 @@ class __KT_ProjectRemove {
         }
 
         return removeOk;
-    }
+    };
 
-    comp(items: _ItemClasses | _ItemClasses[] | string): boolean {
+    comp = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
         return this.remove(items, is.comp);
-    }
+    };
 
-    folder(items: _ItemClasses | _ItemClasses[] | string): boolean {
+    folder = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
         return this.remove(items, is.folder);
-    }
+    };
 
-    audio(items: _ItemClasses | _ItemClasses[] | string): boolean {
+    audio = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
         return this.remove(items, is.audio);
-    }
+    };
 
-    footage(items: _ItemClasses | _ItemClasses[] | string): boolean {
+    footage = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
         return this.remove(items, is.footage);
-    }
-    item(items: _ItemClasses | _ItemClasses[] | string): boolean {
+    };
+    item = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
         return this.remove(items, (item) => true);
-    }
+    };
 
-    image(items: _ItemClasses | _ItemClasses[] | string): boolean {
+    image = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
         return this.remove(items, is.image);
-    }
-    video(items: _ItemClasses | _ItemClasses[] | string): boolean {
+    };
+    video = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
         return this.remove(items, is.video);
-    }
-    solid(items: _ItemClasses | _ItemClasses[] | string): boolean {
+    };
+    solid = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
         return this.remove(items, is.solid);
-    }
+    };
 }
 
 const KT_ProjectRemove = new __KT_ProjectRemove();
