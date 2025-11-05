@@ -14,7 +14,7 @@
 class __KT_AeProjectPath {
     private separator = "//";
 
-    get(item: _ItemClasses): string {
+    get = (item: _ItemClasses): string => {
         const parts: string[] = [];
         let current: _ItemClasses = item;
         while (current.parentFolder && !(current.parentFolder instanceof Project)) {
@@ -23,16 +23,16 @@ class __KT_AeProjectPath {
         }
         // Do not include the rootFolder name
         return this.separator + parts.join(this.separator);
-    }
+    };
 
-    join(...paths: string[]): string {
+    join = (...paths: string[]): string => {
         return paths.join(this.separator);
-    }
+    };
 
-    traverse(
+    traverse = (
         root: Project | FolderItem,
         callback: (item: _ItemClasses, collection: ItemCollection) => void = (item, collection) => {}
-    ) {
+    ) => {
         const length = root.numItems;
 
         for (let i = 1; i <= length; i++) {
@@ -42,9 +42,9 @@ class __KT_AeProjectPath {
                 this.traverse(item, callback);
             }
         }
-    }
+    };
 
-    getComps(root: Project | FolderItem, matcher: (item: _ItemClasses) => boolean): CompItem[] {
+    getComps = (root: Project | FolderItem, matcher: (item: _ItemClasses) => boolean): CompItem[] => {
         const comps: CompItem[] = [];
         this.traverse(root, (item, collection) => {
             if (item instanceof CompItem && matcher(item)) {
@@ -52,9 +52,9 @@ class __KT_AeProjectPath {
             }
         });
         return comps;
-    }
+    };
 
-    getFolders(root: Project | FolderItem, matcher: (item: _ItemClasses) => boolean): FolderItem[] {
+    getFolders = (root: Project | FolderItem, matcher: (item: _ItemClasses) => boolean): FolderItem[] => {
         const folders: FolderItem[] = [];
         this.traverse(root, (item, collection) => {
             if (item instanceof FolderItem && matcher(item)) {
@@ -62,9 +62,9 @@ class __KT_AeProjectPath {
             }
         });
         return folders;
-    }
+    };
 
-    parse(path: string): string[] {
+    parse = (path: string): string[] => {
         // Split by "//" and filter out empty strings
         const segments = path.split(this.separator);
         const result: string[] = [];
@@ -74,9 +74,9 @@ class __KT_AeProjectPath {
             }
         }
         return result;
-    }
+    };
 
-    resolve(root: Project | FolderItem, path: string): _ItemClasses | null {
+    resolve = (root: Project | FolderItem, path: string): _ItemClasses | null => {
         const segments = this.parse(path);
         let current: Project | FolderItem = root;
 
@@ -113,27 +113,27 @@ class __KT_AeProjectPath {
         }
 
         return null; // Should not reach here
-    }
+    };
 
-    getParent(path: string): string {
+    getParent = (path: string): string => {
         const segments = this.parse(path);
         if (segments.length <= 1) {
             return ""; // Root or empty
         }
         segments.pop();
         return this.separator + segments.join(this.separator);
-    }
+    };
 
-    getName(path: string): string {
+    getName = (path: string): string => {
         const segments = this.parse(path);
         return segments.length > 0 ? segments[segments.length - 1] : "";
-    }
+    };
 
-    isAbsolute(path: string): boolean {
+    isAbsolute = (path: string): boolean => {
         return path.indexOf(this.separator) === 0;
-    }
+    };
 
-    normalize(path: string): string {
+    normalize = (path: string): string => {
         // Remove leading/trailing separators, collapse multiple separators
         let normalized = path.replace(new RegExp(this.separator + "+", "g"), this.separator);
         if (normalized.indexOf(this.separator) === 0) {
@@ -144,9 +144,9 @@ class __KT_AeProjectPath {
             normalized = normalized.slice(0, -sepLen);
         }
         return this.separator + normalized;
-    }
+    };
 
-    getRelative(fromPath: string, toPath: string): string {
+    getRelative = (fromPath: string, toPath: string): string => {
         // Simple relative path calculation
         // For now, just return toPath if absolute, else join
         if (this.isAbsolute(toPath)) {
@@ -157,24 +157,24 @@ class __KT_AeProjectPath {
         const toSegments = this.parse(toPath);
         // For simplicity, just append to fromPath
         return fromPath + this.separator + toSegments.join(this.separator);
-    }
+    };
 
-    list(root: Project | FolderItem, prefix: string = ""): string[] {
+    list = (root: Project | FolderItem, prefix: string = ""): string[] => {
         const paths: string[] = [];
         this.traverse(root, (item) => {
             const itemPath = this.get(item);
             paths.push(itemPath);
         });
         return paths;
-    }
+    };
 
-    getItem(path: string): _ItemClasses | null {
+    getItem = (path: string): _ItemClasses | null => {
         return this.resolve(app.project.rootFolder, path);
-    }
+    };
 
-    isPath(path: string): boolean {
+    isPath = (path: string): boolean => {
         return path.indexOf(this.separator) === 0;
-    }
+    };
 }
 
 const KT_AeProjectPath = new __KT_AeProjectPath();
