@@ -8,17 +8,11 @@ class __KT_ProjectMove {
      * @param destination - The destination folder. Can be a FolderItem or a path string.
      * @returns true if all moves succeeded, false otherwise.
      */
-    move(
-        items: _ItemClasses | _ItemClasses[] | string,
-        destination: FolderItem | string
-    ): boolean {
+    move = (items: _ItemClasses | _ItemClasses[] | string, destination: FolderItem | string): boolean => {
         // Resolve destination folder
         let destFolder: FolderItem | null = null;
         if (typeof destination === "string") {
-            const resolved = KT_AeProjectPath.resolve(
-                app.project.rootFolder,
-                destination
-            );
+            const resolved = KT_AeProjectPath.resolve(app.project.rootFolder, destination);
             if (!resolved || !(resolved instanceof FolderItem)) {
                 return false; // Invalid destination path or not a folder
             }
@@ -30,10 +24,7 @@ class __KT_ProjectMove {
         // Resolve items to move
         let itemsToMove: _ItemClasses[] = [];
         if (typeof items === "string") {
-            const resolved = KT_AeProjectPath.resolve(
-                app.project.rootFolder,
-                items
-            );
+            const resolved = KT_AeProjectPath.resolve(app.project.rootFolder, items);
             if (!resolved) {
                 return false; // Invalid item path
             }
@@ -54,7 +45,7 @@ class __KT_ProjectMove {
         }
 
         return true; // All moves succeeded
-    }
+    };
 }
 
 const KT_ProjectMove = new __KT_ProjectMove();
