@@ -97,4 +97,20 @@ describe("KT_Project.add Tests", () => {
         expect(childFolder).toBeTruthy();
         expect(childFolder.parentFolder).toBe(parentFolder);
     });
+    it("should create a nested folder structure by path", () => {
+        const rootFolder = KT_Project.add.folder({ name: "Root Folder" });
+        const parentFolder = KT_Project.add.folder({
+            name: "Parent Folder",
+            parentFolder: rootFolder,
+        });
+        const path = KT_Project.path.join("Root Folder", "Parent Folder");
+        const resPath = KT_Project.path.normalize(path);
+        const childFolder = KT_Project.add.folder({
+            name: "Child Folder",
+            parentFolder: resPath,
+        });
+        createdItems.push(rootFolder, parentFolder, childFolder);
+        expect(childFolder).toBeTruthy();
+        expect(childFolder.parentFolder).toBe(parentFolder);
+    });
 });

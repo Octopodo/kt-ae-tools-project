@@ -16,25 +16,27 @@ describe("KT_Project.remove Tests", () => {
         const comp = KT_Project.add.comp({ name: "Remove Comp" });
         if (!comp) throwError("Comp creation failed");
         createdItems.push(comp);
-        expect(KT_Project.find.comps({ name: "Remove Comp" })).toBeTruthy();
+        const foundComp = KT_Project.find.comps({ name: "Remove Comp" });
+        expect(foundComp[0]).toBe(comp);
 
         const result = KT_Project.remove.item(comp);
         expect(result).toBe(true);
 
         const found = KT_Project.find.comps({ name: "Remove Comp" });
-        expect(found).toBe(false);
+        expect(found.length).toBe(0);
     });
 
     it("should remove a folder by path", () => {
         const folder = KT_Project.add.folder({ name: "Remove Folder" });
         createdItems.push(folder);
-        expect(KT_Project.find.folders({ name: "Remove Folder" })).toBe(folder);
+        var foundFolder = KT_Project.find.folders({ name: "Remove Folder" });
+        expect(foundFolder[0]).toBe(folder);
 
         const result = KT_Project.remove.item("//Remove Folder");
         expect(result).toBe(true);
 
         const found = KT_Project.find.folders({ name: "Remove Folder" });
-        expect(found).toBe(false);
+        expect(found.length).toBe(0);
     });
 
     it("should remove multiple items", () => {
@@ -48,8 +50,8 @@ describe("KT_Project.remove Tests", () => {
 
         const found1 = KT_Project.find.comps({ name: "Remove Comp1" });
         const found2 = KT_Project.find.comps({ name: "Remove Comp2" });
-        expect(found1).toBe(false);
-        expect(found2).toBe(false);
+        expect(found1.length).toBe(0);
+        expect(found2.length).toBe(0);
     });
 
     it("should return false for invalid path", () => {
@@ -66,7 +68,7 @@ describe("KT_Project.remove Tests", () => {
         expect(result).toBe(true);
 
         const found = KT_Project.find.comps({ name: "Remove Comp Options" });
-        expect(found).toBe(false);
+        expect(found.length).toBe(0);
     });
 
     it("should remove folder by options", () => {
@@ -77,7 +79,7 @@ describe("KT_Project.remove Tests", () => {
         expect(result).toBe(true);
 
         const found = KT_Project.find.folders({ name: "Remove Folder Options" });
-        expect(found).toBe(false);
+        expect(found.length).toBe(0);
     });
 
     // For footage, image, audio, video, solid, duplicate existing if any
