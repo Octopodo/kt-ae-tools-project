@@ -13,6 +13,16 @@ type CompOptions = {
     frameRate?: number;
 };
 
+type SolidOptions = {
+    name: string;
+    parentFolder?: FolderItem | string;
+    width?: number;
+    height?: number;
+    pixelAspect?: number;
+    duration?: number;
+    color?: [number, number, number];
+};
+
 type FolderOptions = {
     name: string;
     parentFolder?: FolderItem | string;
@@ -37,7 +47,7 @@ class __KT_ProjectAdd {
     private __DEFAULT_COMP_FRAME_RATE = 25;
     private __DEFAULT_COMP_DURATION = 10;
 
-    private __sanitzeCompValues(options: CompOptions): CompOptions {
+    private __sanitzeCompValues = (options: CompOptions): CompOptions => {
         options.width = options.width || this.__DEFAULT_COMP_WIDTH;
         options.height = options.height || this.__DEFAULT_COMP_HEIGHT;
         options.pixelAspect = options.pixelAspect || this.__DEFAULT_COMP_PIXEL_ASPECT;
@@ -55,22 +65,38 @@ class __KT_ProjectAdd {
         options.frameRate = Math.max(options.frameRate, this.__MIN_COMP_FRAME_RATE);
         options.duration = Math.max(options.duration, this.__MIN_COMP_DURATION);
         return options;
-    }
+    };
 
-    private __moveToFolder(item: _ItemClasses, options: CompOptions | FolderOptions) {
+    private __sanitzeSolidValues = (options: SolidOptions): SolidOptions => {
+        options.width = options.width || this.__DEFAULT_COMP_WIDTH;
+        options.height = options.height || this.__DEFAULT_COMP_HEIGHT;
+        options.pixelAspect = options.pixelAspect || this.__DEFAULT_COMP_PIXEL_ASPECT;
+        options.duration = options.duration || this.__DEFAULT_COMP_DURATION;
+        options.color = options.color || [1, 1, 1];
+        options.width = Math.min(Math.floor(options.width), this.__MAX_COMP_WIDTH);
+        options.height = Math.min(Math.floor(options.height), this.__MAX_COMP_HEIGHT);
+        options.pixelAspect = Math.min(options.pixelAspect, this.__MAX_COMP_PIXEL_ASPECT);
+        options.duration = Math.min(options.duration, this.__MAX_COMP_DURATION);
+        for (let i = 0; i < options.color.length; i++) {
+            options.color[i] = Math.min(Math.max(options.color[i], 0), 1);
+        }
+        return options;
+    };
+
+    private __moveToFolder = (item: _ItemClasses, options: CompOptions | FolderOptions) => {
         if (!options.parentFolder) return;
         let targetFolder: FolderItem | false = false;
         if (is.folder(options.parentFolder)) {
             targetFolder = options.parentFolder;
         } else {
-            const folders = find.folders({ name: options.parentFolder as string });
+            const folders = find.folders(options.parentFolder);
             if (!folders || folders.length === 0) return;
             targetFolder = folders[0];
         }
         move.move(item, targetFolder);
-    }
+    };
 
-    comp(options: CompOptions): CompItem | false {
+    comp = (options: CompOptions): CompItem | false => {
         const name = options.name;
         options = this.__sanitzeCompValues(options);
         const comp = app.project.items.addComp(
@@ -84,9 +110,9 @@ class __KT_ProjectAdd {
         this.__moveToFolder(comp, options);
 
         return comp;
-    }
+    };
 
-    compFromFootage(footage: _ItemClasses, options: CompOptions): CompItem | false {
+    compFromFootage = (footage: _ItemClasses, options: CompOptions): CompItem | false => {
         if (!is.footage(footage)) return false;
         options.name = path.stripFileExtension(footage.name) || "Comp";
         options.width = footage.width;
@@ -101,18 +127,51 @@ class __KT_ProjectAdd {
         if (!is.comp(comp)) return false;
         comp.layers.add(footage);
         return comp;
-    }
+    };
 
-    folder(options: FolderOptions): FolderItem {
+    folder = (options: FolderOptions): FolderItem => {
         const folder = app.project.items.addFolder(options.name);
         this.__moveToFolder(folder, options);
 
         return folder;
-    }
+    };
 
-    folderStructure(hierarchy: any): FolderItem | Boolean {
+    //Look for a solution for invalid object whe deleting comp
+    private solid = (options: SolidOptions): FootageItem | false => {
+        options = this.__sanitzeSolidValues(options);
+        try {
+            const tempComp = this.comp({
+                name: "TempCompForSolid",
+                width: options.width!,
+                height: options.height!,
+                pixelAspect: options.pixelAspect!,
+                duration: options.duration!,
+            });
+            if (!tempComp) return false;
+            const solid = tempComp.layers.addSolid(
+                options.color!,
+                options.name,
+                options.width!,
+                options.height!,
+                options.pixelAspect!,
+                options.duration!
+            );
+            if (!solid) {
+                tempComp.remove();
+                return false;
+            }
+
+            this.__moveToFolder(solid.source, options);
+            tempComp.remove();
+            return solid.source;
+        } catch (e) {
+            return false;
+        }
+    };
+
+    folderStructure = (hierarchy: any): FolderItem | Boolean => {
         return false;
-    }
+    };
 }
 
 const KT_ProjectAdd = new __KT_ProjectAdd();
