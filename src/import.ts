@@ -17,11 +17,11 @@ type KT_ImportOptions = {
 };
 
 class __KT_ProjectImport {
-    private _folderRecursive(options: KT_ImportOptions): FolderItem | Boolean {
+    private _folderRecursive = (options: KT_ImportOptions): FolderItem | Boolean => {
         return false;
-    }
+    };
 
-    private _parseImportOptions(options: KT_ImportOptions): ImportOptions | false {
+    private _parseImportOptions = (options: KT_ImportOptions): ImportOptions | false => {
         if (!options || typeof options.path !== "string") {
             return false;
         }
@@ -48,12 +48,12 @@ class __KT_ProjectImport {
         importOptions.forceAlphabetical = true;
         importOptions.sequence = options.asSequence === true;
         return importOptions;
-    }
+    };
 
-    private _importFile(
+    private _importFile = (
         options: KT_ImportOptions,
         fileChecker: (file: File | string) => boolean = (file) => true
-    ): _ItemClasses | Boolean {
+    ): _ItemClasses | Boolean => {
         const importOptions = this._parseImportOptions(options);
         if (!importOptions || !importOptions.canImportAs(importOptions.importAs)) {
             return false;
@@ -68,33 +68,37 @@ class __KT_ProjectImport {
         }
 
         return false;
-    }
+    };
 
-    isValidExtension(filePath: string | File, category?: string): boolean {
+    isValidExtension = (filePath: string | File, category?: string): boolean => {
         return path.isValidExtension(aeExtensions, filePath, category);
-    }
+    };
 
-    folder(options: KT_ImportOptions): FolderItem | Boolean {
+    folder = (options: KT_ImportOptions): FolderItem | Boolean => {
         return false;
-    }
-    file(options: KT_ImportOptions): _ItemClasses | Boolean {
+    };
+
+    file = (options: KT_ImportOptions): _ItemClasses | Boolean => {
         return this._importFile(options, (file) => this.isValidExtension(file));
-    }
-    audio(options: KT_ImportOptions): _ItemClasses | Boolean {
+    };
+
+    audio = (options: KT_ImportOptions): _ItemClasses | Boolean => {
         const imported = this._importFile(options, (file) => this.isValidExtension(file, "audio"));
 
         return imported;
-    }
-    video(options: KT_ImportOptions): _ItemClasses | Boolean {
+    };
+
+    video = (options: KT_ImportOptions): _ItemClasses | Boolean => {
         const imported = this._importFile(options, (file) => this.isValidExtension(file, "video"));
         return imported;
-    }
+    };
 
-    image(options: KT_ImportOptions): _ItemClasses | Boolean {
+    image = (options: KT_ImportOptions): _ItemClasses | Boolean => {
         const imported = this._importFile(options, (file) => this.isValidExtension(file, "image"));
         return imported;
-    }
-    footage(options: KT_ImportOptions): _ItemClasses | Boolean {
+    };
+
+    footage = (options: KT_ImportOptions): _ItemClasses | Boolean => {
         const imported = this._importFile(
             options,
             (file) =>
@@ -103,7 +107,7 @@ class __KT_ProjectImport {
                 this.isValidExtension(file, "audio")
         );
         return imported;
-    }
+    };
 }
 
 export const KT_ProjectImport = new __KT_ProjectImport();
