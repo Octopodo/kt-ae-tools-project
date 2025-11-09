@@ -102,4 +102,6 @@ This is a TypeScript library providing After Effects project management utilitie
 - When documenting functions always write a brief description, include parameter types, defaults(if any) and return types clearly in a table format
 - Always include an index of contents at the start of the documentation file
 - If a type is on this codebase, try to link to it using the format `{@link TypeName}`
-- For document modules use the KT_Project.moduleName format to refer to them. Look at KT_Project.ts for reference
+- For document modules use the KT_Project.moduleName format to refer to them. Look at KT_Project.ts for reference.
+- On api indexes dont use KT_Project.moduleName format, just the method name
+- Use emojis wisely to highlight important sections or notes
