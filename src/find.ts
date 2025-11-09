@@ -14,6 +14,8 @@ type FindProjectOptionParams = {
     caseSensitive?: boolean;
     deep?: boolean;
     root?: FolderItem;
+
+    check?: (item: _ItemClasses) => boolean;
 };
 
 type FindProjectUniqueParam = string | string[] | number | number[] | RegExp | RegExp[];
@@ -29,6 +31,7 @@ type FindProjectOptions = {
     caseSensitive: boolean;
     deep: boolean;
     root: FolderItem;
+    check: (item: _ItemClasses) => boolean;
 };
 
 class KT_ProjectFind {
@@ -74,6 +77,7 @@ class KT_ProjectFind {
             const item = app.project.item(i);
             if (
                 typeChecker(item) &&
+                KT_ProjectFind._matchCheck(item, normalizedOptions.check) &&
                 KT_ProjectFind._matchItem(
                     item,
                     normalizedOptions.name,
@@ -181,6 +185,10 @@ class KT_ProjectFind {
         return false;
     };
 
+    private static _matchCheck = (item: _ItemClasses, checkFn: (item: _ItemClasses) => boolean): boolean => {
+        return checkFn(item);
+    };
+
     private static _matchItem = (
         item: _ItemClasses,
         options: FindProjectSingleOption,
@@ -210,6 +218,7 @@ class KT_ProjectFind {
             caseSensitive: true,
             deep: false,
             root: app.project.rootFolder,
+            check: (item: _ItemClasses) => true,
         };
         let simpleParam: (string | number | RegExp | undefined)[] = [];
 
@@ -248,6 +257,8 @@ class KT_ProjectFind {
                 } else if (keyStr === "id") {
                     // Manejo especial para id
                     filterSingleParam((params as any)[keyStr], undefined);
+                } else if (keyStr === "check") {
+                    options.check = (params as any)[keyStr] || options.check;
                 } else {
                     // Ignora keys inválidas
                     continue;

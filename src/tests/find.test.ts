@@ -299,4 +299,34 @@ describe("KT_ProjectFind", () => {
             expect(found.length).toBeGreaterThanOrEqual(2);
         });
     });
+
+    describe("check function", () => {
+        it("should find items using custom check function", () => {
+            const compToMatch = KT_ProjectAdd.comp({
+                name: "CustomCheckComp",
+                width: 200,
+                height: 200,
+            }) as CompItem;
+
+            const standardComp = KT_ProjectAdd.comp({
+                name: "StandardComp",
+                width: 1920,
+                height: 1080,
+            }) as CompItem;
+
+            expect(is.comp(compToMatch)).toBe(true);
+            expect(is.comp(standardComp)).toBe(true);
+            const found = KT_ProjectFind.comps({
+                check: (item: _ItemClasses) => {
+                    const comp = item as CompItem;
+                    return comp.width < 500 && comp.height < 500;
+                },
+            });
+            expect(found.length).toBe(1);
+            expect(found[0].name).toBe("CustomCheckComp");
+            // Clean up
+            KT_ProjectRemove.item(compToMatch);
+            KT_ProjectRemove.item(standardComp);
+        });
+    });
 });
