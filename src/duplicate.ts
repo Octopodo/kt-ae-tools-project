@@ -4,30 +4,62 @@ import { KT_ProjectMove as move } from "./move";
 import { KT_AeProjectPath as path } from "./path";
 import { KT_ProjectFind as find } from "./find";
 
-class __KT_ProjectDuplicate {
-    private __duplicateComp = (comp: CompItem): CompItem | false => {
-        return comp.duplicate() as CompItem;
+type DuplicateParams = _ItemClasses | _ItemClasses[] | string | string[];
+
+class KT_ProjectDuplicate {
+    static comps = (items: DuplicateParams): CompItem[] => {
+        return KT_ProjectDuplicate.__duplicateItems(items, "comp") as CompItem[];
     };
 
-    private __duplicateFolder = (folder: FolderItem): FolderItem | false => {
-        const newFolder = add.folder({ name: folder.name + " copy", parentFolder: folder.parentFolder });
-        for (let i = 1; i <= folder.numItems; i++) {
-            const item = this.__duplicateItems([folder.item(i)], "item");
-            if (item.length > 0) {
-                item[0].parentFolder = newFolder;
+    static folders = (items: DuplicateParams): FolderItem[] => {
+        return KT_ProjectDuplicate.__duplicateItems(items, "folder") as FolderItem[];
+    };
+
+    static footage = (items: DuplicateParams): FootageItem[] => {
+        return KT_ProjectDuplicate.__duplicateItems(items, "footage") as FootageItem[];
+    };
+
+    static videos = (items: DuplicateParams): FootageItem[] => {
+        return KT_ProjectDuplicate.__duplicateItems(items, "video") as FootageItem[];
+    };
+
+    static audio = (items: DuplicateParams): FootageItem[] => {
+        return KT_ProjectDuplicate.__duplicateItems(items, "audio") as FootageItem[];
+    };
+
+    static images = (items: DuplicateParams): FootageItem | FootageItem[] | false => {
+        return KT_ProjectDuplicate.__duplicateItems(items, "image") as FootageItem | FootageItem[] | false;
+    };
+
+    static solids = (items: DuplicateParams): FootageItem | FootageItem[] | false => {
+        return KT_ProjectDuplicate.__duplicateItems(items, "solid") as FootageItem | FootageItem[] | false;
+    };
+
+    static items = (items: DuplicateParams): _ItemClasses[] => {
+        return KT_ProjectDuplicate.__duplicateItems(items, "item") as _ItemClasses[];
+    };
+
+    private static __selectItems = (items: DuplicateParams, findType: string): _ItemClasses[] => {
+        const itemsArray = items instanceof Array ? items : [items];
+        const selectedItems: _ItemClasses[] = [];
+        for (const item of itemsArray) {
+            if (typeof item === "string") {
+                const findMethod = findType + "s";
+                if (typeof (find as any)[findMethod] === "function") {
+                    const foundItems = (find as any)[findMethod](item);
+                    selectedItems.push(...foundItems);
+                }
+            } else {
+                selectedItems.push(item);
             }
         }
-        return newFolder;
+        return selectedItems;
     };
 
-    private __duplicateFootage = (footage: FootageItem): FootageItem | false => {
-        return false;
-    };
-
-    private __duplicateItems = (items: any[], typeChecker: string): _ItemClasses[] => {
+    private static __duplicateItems = (items: DuplicateParams, typeChecker: string): _ItemClasses[] => {
         const duplicates: _ItemClasses[] = [];
-
-        for (const item of items) {
+        const itemsArray = KT_ProjectDuplicate.__selectItems(items, typeChecker);
+        for (const item of itemsArray) {
             const checker = is[typeChecker as keyof typeof is];
             if (!checker || !checker(item)) {
                 continue;
@@ -44,65 +76,24 @@ class __KT_ProjectDuplicate {
         return duplicates;
     };
 
-    comps = (items: _ItemClasses | _ItemClasses[] | string): CompItem[] => {
-        const selectedItems = this.__selectItems(items, "comps");
-        return this.__duplicateItems(selectedItems, "comp") as CompItem[];
+    private static _duplicateComp = (comp: CompItem): CompItem | false => {
+        return comp.duplicate() as CompItem;
     };
 
-    folders = (items: _ItemClasses | _ItemClasses[] | string): FolderItem[] => {
-        const selectedItems = this.__selectItems(items, "folders");
-        return this.__duplicateItems(selectedItems, "folder") as FolderItem[];
-    };
-
-    footage = (items: _ItemClasses | _ItemClasses[] | string): FootageItem[] => {
-        const selectedItems = this.__selectItems(items, "footage");
-        return this.__duplicateItems(selectedItems, "footage") as FootageItem[];
-    };
-
-    videos = (items: _ItemClasses | _ItemClasses[] | string): FootageItem[] => {
-        const selectedItems = this.__selectItems(items, "videos");
-        return this.__duplicateItems(selectedItems, "video") as FootageItem[];
-    };
-
-    audio = (items: _ItemClasses | _ItemClasses[] | string): FootageItem[] => {
-        const selectedItems = this.__selectItems(items, "audios");
-        return this.__duplicateItems(selectedItems, "audio") as FootageItem[];
-    };
-
-    images = (items: _ItemClasses | _ItemClasses[] | string): FootageItem | FootageItem[] | false => {
-        const selectedItems = this.__selectItems(items, "images");
-        return this.__duplicateItems(selectedItems, "image") as FootageItem | FootageItem[] | false;
-    };
-
-    solids = (items: _ItemClasses | _ItemClasses[] | string): FootageItem | FootageItem[] | false => {
-        const selectedItems = this.__selectItems(items, "solids");
-        return this.__duplicateItems(selectedItems, "solid") as FootageItem | FootageItem[] | false;
-    };
-
-    items = (items: _ItemClasses | _ItemClasses[] | string): _ItemClasses[] => {
-        const selectedItems = this.__selectItems(items, "items");
-        return this.__duplicateItems(selectedItems, "item") as _ItemClasses[];
-    };
-
-    private __selectItems = (
-        items: _ItemClasses | _ItemClasses[] | string | string[],
-        findType: string
-    ): _ItemClasses[] => {
-        const itemsArray = items instanceof Array ? items : [items];
-        const selectedItems: _ItemClasses[] = [];
-        for (const item of itemsArray) {
-            if (typeof item === "string") {
-                if (typeof (find as any)[findType] === "function") {
-                    const foundItems = (find as any)[findType](item);
-                    selectedItems.push(...foundItems);
-                }
-            } else {
-                selectedItems.push(item);
+    private static _duplicateFolder = (folder: FolderItem): FolderItem | false => {
+        const newFolder = add.folder({ name: folder.name + " copy", parentFolder: folder.parentFolder });
+        for (let i = 1; i <= folder.numItems; i++) {
+            const item = KT_ProjectDuplicate.__duplicateItems([folder.item(i)], "item");
+            if (item.length > 0) {
+                item[0].parentFolder = newFolder;
             }
         }
-        return selectedItems;
+        return newFolder;
+    };
+
+    private static __duplicateFootage = (footage: FootageItem): FootageItem | false => {
+        return false;
     };
 }
 
-const KT_ProjectDuplicate = new __KT_ProjectDuplicate();
 export { KT_ProjectDuplicate };
