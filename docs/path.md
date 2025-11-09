@@ -146,6 +146,12 @@ const baseFolder = "Assets";
 const subFolder = "Footage";
 const filename = "background.mov";
 const path = KT_Project.path.join(baseFolder, subFolder, filename);
+
+//Deconstruct and rebuild path
+
+const parsedPath = KT_Project.path.parse(fullPath); // -> ["Assets", "Footage", "video.mov"]
+parsedPath.pop();
+const videoFolderPath = KT_Project.path.join(...parsedPath); // -> "//Assets//Footage"
 ```
 
 ---

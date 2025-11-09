@@ -134,7 +134,10 @@ for (let c = 0; c < categoriesToOrganize.length; c++) {
 
 ```javascript
 // Move items using path strings
-KT_Project.move("//Comps//Scene1", "//Archive");
+const sceneOnePath = KT_Project.path.join("comps", "Scene_1"); // => "//Comps//Scene1"
+const archivePath = KT_Project.path.resolve("Archive"); // => "//Archive"
+
+KT_Project.move(sceneFolderPath, archivePath);
 
 // Move to nested path
 KT_Project.move("//Items//Sequence_001", "//Organization//Sequences//2024");

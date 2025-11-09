@@ -349,6 +349,31 @@ const items = KT_Project.import.footage({
 });
 ```
 
+### Import As Comp
+
+```javascript
+// Import all contents without folder hierarchy
+const assetsPath = KT_Project.path.join("assets", "footage")
+const footageFolder = KT_Project.add.folder({
+    name: "Scene_1",
+    parentFolder: assetsPath
+});
+
+const compFolder = KT_Project.add.folder({
+    name: "Scene_1_comps",
+    parentFolder: KT_Project.path.join("comps", "scenes")
+})
+
+const items = KT_Project.import.footage({
+    path: "/complex/folder/structure",
+    recursive: true,
+    flat: true,
+    footageFolder: footageFolder,
+    compFolder: compFolder
+    parent: flatFolder,
+});
+```
+
 ---
 
 ## Type Definitions
