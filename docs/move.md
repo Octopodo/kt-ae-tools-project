@@ -51,10 +51,14 @@ const items = [comp1, comp2, comp3];
 KT_Project.move(items, destinationFolder);
 
 // Move using path strings
-KT_Project.move(KT_Project.path.join("Comps", "OldComp"), KT_Project.path.join("Comps", "Organized"));
+const oldCompPath = KT_Project.path.join("Comps", "OldComp");
+const targetPath = KT_Project.path.join("Comps", "Organized");
+KT_Project.move(oldCompPath, targetPath);
 
 // Move using mixed references
-const items = [KT_Project.path.join("Item1"), KT_Project.path.join("Item2")];
+const item1Path = KT_Project.path.join("Item1");
+const item2Path = KT_Project.path.join("Item2");
+const items = [item1Path, item2Path];
 KT_Project.move(items, targetFolder);
 
 // Verify move operation

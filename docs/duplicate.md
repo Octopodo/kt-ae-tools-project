@@ -58,10 +58,13 @@ const items = [comp1, folder1, footage1];
 const duplicates = KT_Project.duplicate.items(items);
 
 // Duplicate using path
-const duplicates = KT_Project.duplicate.items(KT_Project.path.join("CompositionName"));
+const compPath = KT_Project.path.join("CompositionName");
+const duplicates = KT_Project.duplicate.items(compPath);
 
 // Duplicate multiple by path
-const duplicates = KT_Project.duplicate.items([KT_Project.path.join("Comp1"), KT_Project.path.join("Comp2")]);
+const comp1Path = KT_Project.path.join("Comp1");
+const comp2Path = KT_Project.path.join("Comp2");
+const duplicates = KT_Project.duplicate.items([comp1Path, comp2Path]);
 ```
 
 ---
@@ -127,7 +130,8 @@ const folders = KT_Project.find.folders({ deep: true });
 const duplicates = KT_Project.duplicate.folders(folders);
 
 // Duplicate folder by path
-const duplicates = KT_Project.duplicate.folders(KT_Project.path.join("Assets"));
+const assetsPath = KT_Project.path.join("Assets");
+const duplicates = KT_Project.duplicate.folders(assetsPath);
 
 // Duplicated folder maintains structure
 if (duplicates.length > 0) {
@@ -162,7 +166,8 @@ const allFootage = KT_Project.find.footage({ deep: true });
 const duplicates = KT_Project.duplicate.footage(allFootage);
 
 // Duplicate by path
-const duplicates = KT_Project.duplicate.footage(KT_Project.path.join("Assets", "video.mov"));
+const footagePath = KT_Project.path.join("Assets", "video.mov");
+const duplicates = KT_Project.duplicate.footage(footagePath);
 ```
 
 ---

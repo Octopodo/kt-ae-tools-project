@@ -107,9 +107,10 @@ const subfolder = KT_Project.add.folder({
 });
 
 // Create a folder using path reference
+const parentPath = KT_Project.path.join("Project");
 const folder = KT_Project.add.folder({
     name: "Compositions",
-    parentFolder: KT_Project.path.join("Project"),
+    parentFolder: parentPath,
 });
 ```
 

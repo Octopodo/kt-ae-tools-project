@@ -57,7 +57,8 @@ const items = [comp1, comp2, folder1];
 KT_Project.remove.item(items);
 
 // Remove using path
-KT_Project.remove.item(KT_Project.path.join("CompositionToDelete"));
+const itemPath = KT_Project.path.join("CompositionToDelete");
+KT_Project.remove.item(itemPath);
 
 // Verify removal
 if (KT_Project.remove.item(item)) {
@@ -92,7 +93,8 @@ const comps = KT_Project.find.comps({ deep: true });
 KT_Project.remove.comp(comps);
 
 // Remove by path
-KT_Project.remove.comp(KT_Project.path.join("Sequences", "Scene_01"));
+const compPath = KT_Project.path.join("Sequences", "Scene_01");
+KT_Project.remove.comp(compPath);
 ```
 
 ---
@@ -122,7 +124,8 @@ const oldFolders = KT_Project.find.folders("Archive");
 KT_Project.remove.folder(oldFolders);
 
 // Remove by path
-KT_Project.remove.folder(KT_Project.path.join("Unused", "OldComps"));
+const folderPath = KT_Project.path.join("Unused", "OldComps");
+KT_Project.remove.folder(folderPath);
 ```
 
 ---
@@ -305,11 +308,10 @@ $.writeln("Cleanup complete!");
 
 ```javascript
 // Remove specific items by path
-const pathsToRemove = [
-    KT_Project.path.join("Comps", "Unused_01"),
-    KT_Project.path.join("Comps", "Unused_02"),
-    KT_Project.path.join("Assets", "OldFootage"),
-];
+const path1 = KT_Project.path.join("Comps", "Unused_01");
+const path2 = KT_Project.path.join("Comps", "Unused_02");
+const path3 = KT_Project.path.join("Assets", "OldFootage");
+const pathsToRemove = [path1, path2, path3];
 
 for (let i = 0; i < pathsToRemove.length; i++) {
     KT_Project.remove.item(pathsToRemove[i]);
