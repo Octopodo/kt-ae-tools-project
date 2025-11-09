@@ -143,6 +143,32 @@ KT_Project.move(sceneFolderPath, archivePath);
 KT_Project.move("//Items//Sequence_001", "//Organization//Sequences//2024");
 ```
 
+### Move Items Using Custom Criteria
+
+```javascript
+// Find and move all compositions longer than 10 seconds
+const archiveFolder = KT_Project.add.folder({ name: "Archive" });
+const longComps = KT_Project.find.comps({
+    check: function (item) {
+        return item.duration > 10;
+    },
+    deep: true,
+});
+
+KT_Project.move(longComps, archiveFolder);
+
+// Move high-resolution footage to a specific folder
+const highResFolder = KT_Project.add.folder({ name: "4K_Footage" });
+const highResFootage = KT_Project.find.footage({
+    check: function (item) {
+        return item.width >= 3840 && item.height >= 2160;
+    },
+    deep: true,
+});
+
+KT_Project.move(highResFootage, highResFolder);
+```
+
 ---
 
 ## Error Handling

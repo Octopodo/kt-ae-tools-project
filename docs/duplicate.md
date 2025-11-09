@@ -339,6 +339,35 @@ if (duplicatedAssets.length > 0) {
 }
 ```
 
+### Duplicate Items Using Custom Criteria
+
+```javascript
+// Duplicate only compositions longer than 5 seconds
+const longComps = KT_Project.find.comps({
+    check: function (item) {
+        return item.duration > 5;
+    },
+    deep: true,
+});
+
+const duplicates = KT_Project.duplicate.comps(longComps);
+const backupFolder = KT_Project.add.folder({ name: "Long Comps Backup" });
+
+for (let i = 0; i < duplicates.length; i++) {
+    KT_Project.move(duplicates[i], backupFolder);
+}
+
+// Duplicate high-resolution video footage
+const highResVideos = KT_Project.find.videos({
+    check: function (item) {
+        return item.width >= 1920 && item.height >= 1080;
+    },
+    deep: true,
+});
+
+const videoCopies = KT_Project.duplicate.videos(highResVideos);
+```
+
 ---
 
 ## Notes

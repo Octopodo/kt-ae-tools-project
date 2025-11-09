@@ -318,6 +318,30 @@ for (let i = 0; i < pathsToRemove.length; i++) {
 }
 ```
 
+### Remove Items Using Custom Filter
+
+```javascript
+// Remove compositions shorter than 2 seconds
+const shortComps = KT_Project.find.comps({
+    check: function (item) {
+        return item.duration < 2;
+    },
+    deep: true,
+});
+
+KT_Project.remove.comp(shortComps);
+
+// Remove unused footage larger than 500MB
+const largeUnusedFootage = KT_Project.find.footage({
+    check: function (item) {
+        return item.width > 4000 && item.height > 4000;
+    },
+    deep: true,
+});
+
+KT_Project.remove.footage(largeUnusedFootage);
+```
+
 ---
 
 ## Error Handling

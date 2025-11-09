@@ -61,6 +61,7 @@ Searches for any items in the project matching the specified criteria.
 | `caseSensitive` | `boolean`                                  | `false`       | Enable case-sensitive matching   |
 | `deep`          | `boolean`                                  | `false`       | Search recursively in subfolders |
 | `root`          | `FolderItem`                               | `app.project` | Root folder to start search      |
+| `check`         | `(item: _ItemClasses) => boolean`          | None          | Custom matching function         |
 
 **Example:**
 
@@ -80,6 +81,14 @@ const items = KT_Project.find.items(/^Item_\d+$/);
 
 // Search by ID
 const items = KT_Project.find.items(42);
+
+// Search with custom check function
+const itemsWithDuration = KT_Project.find.items({
+    check: function (item) {
+        return item.hasVideo && item.duration > 5;
+    },
+    deep: true,
+});
 ```
 
 ---
@@ -299,6 +308,26 @@ const results = KT_Project.find.items({
 });
 ```
 
+### Search Using Custom Function
+
+```javascript
+// Find compositions longer than 10 seconds
+const longComps = KT_Project.find.comps({
+    check: function (item) {
+        return item.duration > 10;
+    },
+    deep: true,
+});
+
+// Find footage items by custom criteria
+const specificFootage = KT_Project.find.footage({
+    check: function (item) {
+        return item.hasVideo && item.width > 1920;
+    },
+    deep: true,
+});
+```
+
 ---
 
 ## Type Definitions
@@ -316,3 +345,4 @@ const results = KT_Project.find.items({
 | `caseSensitive` | `boolean`                                  | `false` | Enable case-sensitive matching   |
 | `deep`          | `boolean`                                  | `false` | Search recursively in subfolders |
 | `root`          | `FolderItem`                               | None    | Root folder to start search from |
+| `check`         | `(item: _ItemClasses) => boolean`          | None    | Custom matching function         |
