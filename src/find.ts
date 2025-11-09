@@ -1,163 +1,307 @@
+import { KT_StringUtils } from "kt-core";
 import { KT_AeProjectPath as pPath } from "./path";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
 
-type FindProjectOptions = {
-    name?: string;
-    id?: number;
-    path?: string;
+type FindProjectOptionParams = {
+    name?: string | string[] | RegExp | RegExp[];
+    path?: string | string[] | RegExp | RegExp[];
+
+    startsWith?: string | string[] | RegExp | RegExp[];
+    endsWith?: string | string[] | RegExp | RegExp[];
+    contains?: string | string[] | RegExp | RegExp[];
+
+    id?: number | number[];
+    caseSensitive?: boolean;
+    deep?: boolean;
     root?: FolderItem;
 };
 
-function getRoot(options: FindProjectOptions): FolderItem {
-    return options.root || app.project.rootFolder;
-}
+type FindProjectUniqueParam = string | string[] | number | number[] | RegExp | RegExp[];
+type FindProjectParams = FindProjectOptionParams | FindProjectUniqueParam;
+type FindProjectSingleOption = (string | number | RegExp)[];
+type FindProjectOptions = {
+    name: (string | RegExp)[];
+    path: string[];
+    startsWith: (string | RegExp)[];
+    endsWith: (string | RegExp)[];
+    contains: (string | RegExp)[];
+    id: number[];
+    caseSensitive: boolean;
+    deep: boolean;
+    root: FolderItem;
+};
 
 class KT_ProjectFind {
-    private static isInSubtree = (item: _ItemClasses, root: FolderItem): boolean => {
-        let current: FolderItem | Project = item.parentFolder;
-        while (current) {
-            if (current === root) return true;
-            if (current instanceof Project) break;
-            current = current.parentFolder;
+    static items = (options: FindProjectParams | number | string): _ItemClasses[] => {
+        return KT_ProjectFind._findItems(is.item, options);
+    };
+
+    static folders = (options: FindProjectParams | number | string): FolderItem[] => {
+        return KT_ProjectFind._findItems(is.folder, options);
+    };
+
+    static comps = (options: FindProjectParams | number | string): CompItem[] => {
+        return KT_ProjectFind._findItems(is.comp, options);
+    };
+
+    static footage = (options: FindProjectParams | number | string): FootageItem[] => {
+        return KT_ProjectFind._findItems(is.footage, options);
+    };
+
+    static audios = (options: FindProjectParams | number | string): FootageItem[] => {
+        return KT_ProjectFind._findItems(is.audio, options);
+    };
+
+    static videos = (options: FindProjectParams | number | string): FootageItem[] => {
+        return KT_ProjectFind._findItems(is.video, options);
+    };
+
+    static images = (options: FindProjectParams | number | string): FootageItem[] => {
+        return KT_ProjectFind._findItems(is.image, options);
+    };
+
+    static solids = (options: FindProjectParams | number | string): FootageItem[] => {
+        return [];
+    };
+
+    private static _findItems = <T extends _ItemClasses>(
+        typeChecker: (item: _ItemClasses) => item is T,
+        options: FindProjectParams
+    ): T[] => {
+        let normalizedOptions = KT_ProjectFind._filterParams(options);
+        const items: T[] = [];
+        for (let i = 1; i <= app.project.numItems; i++) {
+            const item = app.project.item(i);
+            if (
+                typeChecker(item) &&
+                KT_ProjectFind._matchItem(
+                    item,
+                    normalizedOptions.name,
+                    normalizedOptions.caseSensitive,
+                    KT_ProjectFind._matchName
+                ) &&
+                KT_ProjectFind._matchItem(
+                    item,
+                    normalizedOptions.id,
+                    normalizedOptions.caseSensitive,
+                    KT_ProjectFind._matchId
+                ) &&
+                KT_ProjectFind._matchItem(
+                    item,
+                    normalizedOptions.path,
+                    normalizedOptions.caseSensitive,
+                    KT_ProjectFind._matchPath
+                ) &&
+                KT_ProjectFind._matchItem(
+                    item,
+                    normalizedOptions.startsWith,
+                    normalizedOptions.caseSensitive,
+                    KT_ProjectFind._matchStartsWith
+                ) &&
+                KT_ProjectFind._matchItem(
+                    item,
+                    normalizedOptions.endsWith,
+                    normalizedOptions.caseSensitive,
+                    KT_ProjectFind._matchEndsWith
+                ) &&
+                KT_ProjectFind._matchItem(
+                    item,
+                    normalizedOptions.contains,
+                    normalizedOptions.caseSensitive,
+                    KT_ProjectFind._matchContains
+                )
+            ) {
+                items.push(item);
+            }
+        }
+        return items;
+    };
+
+    private static _matchName = (
+        item: _ItemClasses,
+        target: FindProjectUniqueParam,
+        caseSensitive: boolean
+    ): boolean => {
+        if (typeof target === "string" || target instanceof RegExp) {
+            return KT_StringUtils.equals(item.name, target, caseSensitive);
         }
         return false;
     };
 
-    private static _normalizeOptions = (options: FindProjectOptions | number | string): FindProjectOptions => {
-        const normalized: FindProjectOptions = {};
-        if (typeof options === "number") {
-            normalized.id = options;
-        } else if (typeof options === "string") {
-            if (pPath.isPath(options)) {
-                normalized.path = options;
-            } else {
-                normalized.name = options;
-            }
-        } else {
-            normalized.name = options.name;
-            normalized.id = options.id;
-            normalized.path = options.path;
-            normalized.root = options.root;
+    private static _matchPath = (
+        item: _ItemClasses,
+        target: FindProjectUniqueParam,
+        caseSensitive: boolean
+    ): boolean => {
+        if (typeof target === "string" && pPath.isPath(target)) {
+            const path = pPath.get(item);
+            return path === target;
         }
-        return normalized;
+        return false;
     };
 
-    // Nuevo: Traversión recursiva desde root para búsquedas scoped
-    private static _traverseFromRoot<T extends _ItemClasses>(
-        root: FolderItem,
-        typeChecker: (item: _ItemClasses) => item is T,
-        options: FindProjectOptions
-    ): T[] {
-        const items: T[] = [];
-        const numItems = root.numItems;
-        for (let i = 1; i <= numItems; i++) {
-            const item = root.item(i);
-            if (
-                typeChecker(item) &&
-                (!options.name || item.name === options.name) &&
-                (!options.path || pPath.get(item) === options.path)
-            ) {
-                items.push(item);
-            }
-            if (item instanceof FolderItem) {
-                // Recursión en subfolders
-                items.push(...this._traverseFromRoot(item, typeChecker, options));
+    private static _matchId = (item: _ItemClasses, target: FindProjectUniqueParam, caseSensitive: boolean): boolean => {
+        if (typeof target === "number") {
+            return item.id === target;
+        }
+        return false;
+    };
+
+    private static _matchStartsWith = (
+        item: _ItemClasses,
+        target: FindProjectUniqueParam,
+        caseSensitive: boolean
+    ): boolean => {
+        if (typeof target === "string" || target instanceof RegExp) {
+            return KT_StringUtils.startsWith(item.name, target, caseSensitive);
+        }
+
+        return false;
+    };
+
+    private static _matchEndsWith = (
+        item: _ItemClasses,
+        target: FindProjectUniqueParam,
+        caseSensitive: boolean
+    ): boolean => {
+        if (typeof target === "string" || target instanceof RegExp) {
+            return KT_StringUtils.endsWith(item.name, target, caseSensitive);
+        }
+        return false;
+    };
+
+    private static _matchContains = (
+        item: _ItemClasses,
+        target: FindProjectUniqueParam,
+        caseSensitive: boolean
+    ): boolean => {
+        if (typeof target === "string" || target instanceof RegExp) {
+            return KT_StringUtils.contains(item.name, target, caseSensitive);
+        }
+        return false;
+    };
+
+    private static _matchItem = (
+        item: _ItemClasses,
+        options: FindProjectSingleOption,
+        caseSensitive: boolean,
+        checker: (item: _ItemClasses, option: FindProjectUniqueParam, caseSensitive: boolean) => boolean
+    ): boolean => {
+        let match = options.length < 1 || false;
+        for (const option of options) {
+            if (checker(item, option, caseSensitive)) {
+                match = true;
+                break;
             }
         }
-        return items;
+        return match;
+    };
+    // Normalize params to an options object
+    // Normalize params to an options object
+    // Normalize params to an options object
+    private static _filterParams = (params: FindProjectParams): FindProjectOptions => {
+        const options: FindProjectOptions = {
+            name: [],
+            path: [],
+            startsWith: [],
+            endsWith: [],
+            contains: [],
+            id: [],
+            caseSensitive: true,
+            deep: false,
+            root: app.project.rootFolder,
+        };
+        let simpleParam: (string | number | RegExp | undefined)[] = [];
+
+        if (
+            typeof params === "string" ||
+            params instanceof RegExp ||
+            typeof params === "number" ||
+            params instanceof Array
+        ) {
+            if (typeof params === "number") {
+                filterSingleParam(params, "id");
+                return options;
+            } else if (typeof params === "string" && pPath.isPath(params as string)) {
+                filterSingleParam(params, "path");
+                return options;
+            } else {
+                filterSingleParam(params, "name");
+                return options;
+            }
+        }
+        // It's an object with options
+        if (typeof params === "object" && params !== null) {
+            for (const key in params) {
+                let keyStr = key as string; // Aserto string (for...in keys son strings)
+                if (keyStr === "caseSensitive" || keyStr === "deep" || keyStr === "root") {
+                    (options as any)[keyStr] = (params as any)[keyStr];
+                } else if (
+                    keyStr === "name" ||
+                    keyStr === "path" ||
+                    keyStr === "startsWith" ||
+                    keyStr === "endsWith" ||
+                    keyStr === "contains"
+                ) {
+                    // Keys válidas para buckets
+                    filterSingleParam((params as any)[keyStr], keyStr);
+                } else if (keyStr === "id") {
+                    // Manejo especial para id
+                    filterSingleParam((params as any)[keyStr], undefined);
+                } else {
+                    // Ignora keys inválidas
+                    continue;
+                }
+            }
+        }
+
+        function filterSingleParam(param: FindProjectUniqueParam, bucketKey?: string): void {
+            let currentParam = param;
+            if (bucketKey && bucketKey !== "name" && bucketKey !== "path") {
+                // For secondary buckets, push directly after toArray
+                let paramArray = currentParam instanceof Array ? currentParam : [currentParam];
+                for (const p of paramArray) {
+                    if (typeof p === "string" || p instanceof RegExp) {
+                        (options as any)[bucketKey].push(p);
+                    } else if (typeof p === "number") {
+                        options.id!.push(p);
+                    }
+                }
+                return;
+            }
+            // Fallback for simples/exact/id
+            if (currentParam instanceof Array) {
+                simpleParam = currentParam;
+            } else {
+                simpleParam = [currentParam];
+            }
+
+            for (const paramItem of simpleParam) {
+                if (typeof paramItem === "string") {
+                    if (pPath.isPath(paramItem)) {
+                        options.path!.push(paramItem);
+                    } else {
+                        options.name!.push(paramItem);
+                    }
+                } else if (typeof paramItem === "number") {
+                    options.id!.push(paramItem);
+                } else if (paramItem instanceof RegExp) {
+                    options.name!.push(paramItem); // Treat as string pattern for name
+                }
+            }
+        }
+        return options;
+    };
+
+    // Find path
+    private static _findPath(root: FolderItem, options: FindProjectOptions): string | undefined {
+        // Implementación de búsqueda de ruta
+        return;
     }
 
-    private static _findItems = <T extends _ItemClasses>(
-        typeChecker: (item: _ItemClasses) => item is T,
-        options: FindProjectOptions | number | string
-    ): T[] => {
-        options = this._normalizeOptions(options);
-        const root = getRoot(options);
-        const isGlobalRoot = root === app.project.rootFolder;
-
-        if (options.id) {
-            try {
-                const item = app.project.itemByID(options.id);
-                if (
-                    item &&
-                    this.isInSubtree(item, root) && // Necesario para ID en sub-root
-                    typeChecker(item) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path || pPath.get(item) === options.path)
-                ) {
-                    return [item];
-                }
-            } catch (e) {}
-            return [];
-        } else if (!isGlobalRoot) {
-            // Optimización: Traversión solo desde root custom
-            return this._traverseFromRoot(root, typeChecker, options);
-        } else {
-            // Fallback: Scan global
-            const items: T[] = [];
-            for (let i = 1; i <= app.project.numItems; i++) {
-                const item = app.project.item(i);
-                if (
-                    typeChecker(item) &&
-                    (!options.name || item.name === options.name) &&
-                    (!options.path || pPath.get(item) === options.path)
-                ) {
-                    items.push(item);
-                }
-            }
-            return items;
-        }
-    };
-
-    static items = (options: FindProjectOptions | number | string): _ItemClasses[] => {
-        return KT_ProjectFind._findItems(is.item, options);
-    };
-
-    static folders = (options: FindProjectOptions | number | string): FolderItem[] => {
-        return KT_ProjectFind._findItems(is.folder, options);
-    };
-
-    static comps = (options: FindProjectOptions | number | string): CompItem[] => {
-        return KT_ProjectFind._findItems(is.comp, options);
-    };
-
-    static footage = (options: FindProjectOptions | number | string): FootageItem[] => {
-        return KT_ProjectFind._findItems(is.footage, options);
-    };
-
-    static audios = (options: FindProjectOptions | number | string): FootageItem[] => {
-        return KT_ProjectFind._findItems(is.audio, options);
-    };
-
-    static videos = (options: FindProjectOptions | number | string): FootageItem[] => {
-        return KT_ProjectFind._findItems(is.video, options);
-    };
-
-    static images = (options: FindProjectOptions | number | string): FootageItem[] => {
-        return KT_ProjectFind._findItems(is.image, options);
-    };
-
-    static solids = (options: FindProjectOptions | number | string): FootageItem[] => {
-        // Note: Solids are FootageItem
-        options = KT_ProjectFind._normalizeOptions(options); // Normalize early
-        const root = getRoot(options);
-
-        // Step 1: Search for "Solids" folder within the root
-        const solidsFolders = KT_ProjectFind._findItems(is.folder, { name: "Solids", root }) as FolderItem[];
-        if (solidsFolders.length > 0) {
-            const solidsFolder = solidsFolders[0]; // Assumes only one Solids folder
-
-            // Step 2: Search for solids inside the Solids folder
-
-            const solidsInFolder = KT_ProjectFind._findItems(is.solid, { ...options, root: solidsFolder });
-            if (solidsInFolder.length > 0) {
-                return solidsInFolder; // Success: Return only these
-            }
-        }
-
-        // Step 3: Fallback to search in the entire root
-        return KT_ProjectFind._findItems(is.solid, options);
-    };
+    private static getRoot(options: FindProjectOptions): FolderItem {
+        return options.root || app.project.rootFolder;
+    }
 }
 
 export { KT_ProjectFind };
