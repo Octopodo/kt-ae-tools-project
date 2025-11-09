@@ -4,14 +4,14 @@
 
 - [Overview](#overview)
 - [Duplication Methods](#duplication-methods)
-    - [items()](#items)
-    - [comps()](#comps)
-    - [folders()](#folders)
-    - [footage()](#footage)
-    - [videos()](#videos)
-    - [audio()](#audio)
-    - [images()](#images)
-    - [solids()](#solids)
+    - [items()](#-items)
+    - [comps()](#-comps)
+    - [folders()](#-folders)
+    - [footage()](#-footage)
+    - [videos()](#-videos)
+    - [audio()](#-audio)
+    - [images()](#-images)
+    - [solids()](#-solids)
 - [Common Patterns](#common-patterns)
 
 ---

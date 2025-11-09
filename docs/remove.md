@@ -4,14 +4,14 @@
 
 - [Overview](#overview)
 - [Removal Methods](#removal-methods)
-    - [item()](#item)
-    - [comp()](#comp)
-    - [folder()](#folder)
-    - [footage()](#footage)
-    - [video()](#video)
-    - [audio()](#audio)
-    - [image()](#image)
-    - [solid()](#solid)
+    - [item()](#-item)
+    - [comp()](#-comp)
+    - [folder()](#-folder)
+    - [footage()](#-footage)
+    - [video()](#-video)
+    - [audio()](#-audio)
+    - [image()](#-image)
+    - [solid()](#-solid)
 - [Common Patterns](#common-patterns)
 
 ---

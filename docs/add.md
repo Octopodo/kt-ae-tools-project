@@ -4,9 +4,9 @@
 
 - [Overview](#overview)
 - [Creation Methods](#creation-methods)
-    - [comp()](#comp)
-    - [folder()](#folder)
-    - [solid()](#solid)
+    - [comp()](#-comp)
+    - [folder()](#-folder)
+    - [solid()](#-solid)
 - [Configuration](#configuration)
 - [Common Patterns](#common-patterns)
 - [Type Definitions](#type-definitions)

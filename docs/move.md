@@ -4,7 +4,7 @@
 
 - [Overview](#overview)
 - [Methods](#methods)
-    - [move()](#move)
+    - [move()](#-move)
 - [Common Patterns](#common-patterns)
 
 ---
