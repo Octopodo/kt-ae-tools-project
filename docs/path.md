@@ -307,17 +307,18 @@ const projectName = "MyProject";
 const folderName = "Sequences";
 const compName = "Scene_01";
 
-const fullPath = "//" + projectName + "//" + folderName + "//" + compName;
+const fullPath = KT_Project.path.join(projectName, folderName, compName);
 const item = KT_Project.path.resolve(app.project.rootFolder, fullPath);
+// Item -> "//MyProject//Sequences//Scene_01"
 ```
 
 ### Navigate Hierarchy with Paths
 
 ```javascript
 // Move through folder structure using paths
-const assetsPath = "//Assets";
-const footagePath = assetsPath + "//Footage";
-const videoPath = footagePath + "//Videos";
+const assetsPath = "Assets";
+const footagePath = KT_Project.path.join(assetsPath, "Footage");
+const videoPath = KT_Project.path.join(footagePath, "Videos");
 
 const videoFolder = KT_Project.path.resolve(app.project.rootFolder, videoPath);
 if (videoFolder) {
@@ -362,7 +363,7 @@ $.writeln("4K+ Compositions: " + resolutions.join(", "));
 
 ```javascript
 // Safely navigate to deep paths
-const path = "//Project//Sequences//Season_01//Episode_01";
+const path = KT_Project.path.join("Project", "Sequences", "Season_01", "Episode_01");
 const item = KT_Project.path.resolve(app.project.rootFolder, path);
 
 if (item) {

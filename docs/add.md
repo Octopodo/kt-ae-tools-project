@@ -109,13 +109,13 @@ const subfolder = KT_Project.add.folder({
 // Create a folder using path reference
 const folder = KT_Project.add.folder({
     name: "Compositions",
-    parentFolder: "//Project",
+    parentFolder: KT_Project.path.join("Project"),
 });
 ```
 
 ---
 
-### 📋 solid
+### 📋 solid (Not implemented)
 
 Creates a new solid (placeholder layer) in the project.
 
