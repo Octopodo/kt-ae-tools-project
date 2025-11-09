@@ -34,8 +34,15 @@ This is a TypeScript library providing After Effects project management utilitie
 - Uses `kt-testing-suite-ts` framework
 - Tests located in `src/tests/` (not `tests/` root)
 - Import testing utilities: `describe`, `it`, `expect`, `runTests`, `beforeAll`, etc.
+- Uses testing suite repos: https://github.com/Octopodo/kt-testing-suite-core/tree/master and https://github.com/Octopodo/kt-testing-suite-ae
+- In order to run tests, you need to import the current testing file on index.test.ts and comment the other test imports
 
 ## Code Patterns & Conventions
+
+- **Comments**: Always write comments in english even if I ask you in another language
+- **Naming**: Same as comments, always use english names for variables, functions, classes, etc.
+- **Loops**: Use for loops instead of Array and Object Methods for compatibility with ExtendScript
+- **Spreading**: Avoid using spread operator (`...`) on objects due to ExtendScript transpiler limitations. For arrays, spreading is acceptable.
 
 ### Naming & Structure
 
@@ -48,6 +55,7 @@ This is a TypeScript library providing After Effects project management utilitie
 - **Global Objects**: Direct access to `app.project`, `$.writeln` (ExtendScript globals)
 - **Item Types**: Uses `types-for-adobe` definitions (`CompItem`, `FolderItem`, `FootageItem`)
 - **Collection Access**: `app.project.items` as default root for operations
+- **Documentation Links**: References to AE scripting docs for method behaviors https://ae-scripting.docsforadobe.dev/ https://extendscript.docsforadobe.dev/
 
 ### Validation & Safety
 
@@ -57,8 +65,8 @@ This is a TypeScript library providing After Effects project management utilitie
 
 ## Dependencies & Ecosystem
 
-- **`kt-core`**: Framework foundation and module system that provides old js libs like json2.js
-- **`kt-io`**: Path/file operations (imported in `import.ts`)
+- **`kt-core`**: Framework foundation and module system that provides old js libs like json2.js https://github.com/Octopodo/kt-core
+- **`kt-io`**: Path/file operations (imported in `import.ts`) https://github.com/Octopodo/kt-io/tree/master
 - **`types-for-adobe`**: AE API type definitions (After Effects 23.0)
 - **Build Tools**: `kt-extendscript-builder` for compilation
 
@@ -76,3 +84,22 @@ This is a TypeScript library providing After Effects project management utilitie
 - **Build Output**: `dist/` for main build, `dist.test/` for test builds
 - **Config**: `kt.config.json` for build configuration (not standard tools)</content>
   <parameter name="filePath">c:\work\dev\KT_aeft\kt-ae-project-tools\.github\copilot-instructions.md
+
+## Donts
+
+- Do not use modern JavaScript features unsupported by ExtendScript (e.g., Promises, async/await, certain ES6+ syntax)
+- Do not use the spread operator on objects
+- Do not use Array/Object methods that are incompatible with ExtendScript (e.g., forEach, map, filter)
+- Do not write tests if you are not asked to
+- Do not modify tsconfig.json or kt.config.json unless instructed
+- Do not write docs if you are not asked to
+
+## Writing docs
+
+- Documentation consists on one md file at the root of the project and more detailed docs on docs folder for each module
+- When writing docs for the root md file, write a brief project overview, some relevant examples of usage and links to the docs folder and other repos used in this project
+- Follow the existing documentation style in the codebase
+- When documenting functions always write a brief description, include parameter types, defaults(if any) and return types clearly in a table format
+- Always include an index of contents at the start of the documentation file
+- If a type is on this codebase, try to link to it using the format `{@link TypeName}`
+- For document modules use the KT_Project.moduleName format to refer to them. Look at KT_Project.ts for reference
