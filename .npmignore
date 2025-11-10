@@ -1,0 +1,9 @@
+./dist
+./dist.test
+./docs
+./vscode
+./node_modules
+./test
+./src/**/*.test.ts
+.npmignore
+package-lock.json
