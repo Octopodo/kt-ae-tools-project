@@ -13,6 +13,7 @@ type FindProjectOptionParams = {
     deep?: boolean;
     root?: FolderItem;
     check?: (item: _ItemClasses) => boolean;
+    callback?: (item: _ItemClasses) => void;
 };
 
 type FindProjectUniqueParam = string | string[] | number | number[] | RegExp | RegExp[];
@@ -90,6 +91,9 @@ class __KT_ProjectFind {
         for (let i = 1; i <= app.project.numItems; i++) {
             const item = app.project.item(i);
             if (typeChecker(item) && this.filterFactory.filter(item, sanitized, caseSensitive)) {
+                if ((options as any).callback) {
+                    (options as any).callback(item);
+                }
                 items.push(item);
             }
         }

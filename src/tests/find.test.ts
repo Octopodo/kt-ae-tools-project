@@ -328,5 +328,19 @@ describe("KT_ProjectFind", () => {
             KT_ProjectRemove.item(compToMatch);
             KT_ProjectRemove.item(standardComp);
         });
+
+        it("should perform callback on each found item", () => {
+            const namesFound: string[] = [];
+            KT_ProjectFind.items({
+                startsWith: "TestComp",
+                callback: (item: _ItemClasses) => {
+                    namesFound.push(item.name);
+                },
+            });
+            namesFound.forEach((name) => {
+                $.writeln("Found item via callback: " + name);
+            });
+            expect(namesFound.length).toBeGreaterThanOrEqual(2);
+        });
     });
 });
