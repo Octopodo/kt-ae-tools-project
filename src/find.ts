@@ -1,6 +1,7 @@
 import { KT_StringUtils, KT_FilterChainFactory } from "kt-core";
 import { KT_AeProjectPath as pPath } from "./path";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
+import { it } from "kt-testing-suite-core";
 
 type FindProjectOptionParams = {
     name?: string | string[] | RegExp | RegExp[];
@@ -41,6 +42,19 @@ class __KT_ProjectFind {
         check: (item: _ItemClasses, expectedArray: any[]) => {
             if (expectedArray.length > 0 && typeof expectedArray[0] === "function") {
                 return expectedArray[0](item);
+            }
+            return false;
+        },
+        root: (item: _ItemClasses, expectedArray: any[]) => {
+            if (expectedArray.length > 0 && is.folder(expectedArray[0])) {
+                const rootFolder = expectedArray[0] as FolderItem;
+                let parent = item.parentFolder;
+                while (parent) {
+                    if (parent.id === rootFolder.id) {
+                        return true;
+                    }
+                    parent = parent.parentFolder;
+                }
             }
             return false;
         },
@@ -90,9 +104,8 @@ class __KT_ProjectFind {
         const items: T[] = [];
         for (let i = 1; i <= app.project.numItems; i++) {
             const item = app.project.item(i);
-            const isInRoot =
-                (sanitized.root && item.parentFolder && item.parentFolder.id === sanitized.root.id) || true;
-            if (typeChecker(item) && this.filterFactory.filter(item, sanitized, caseSensitive) && isInRoot) {
+
+            if (typeChecker(item) && this.filterFactory.filter(item, sanitized, caseSensitive)) {
                 if ((options as any).callback) {
                     (options as any).callback(item);
                 }
