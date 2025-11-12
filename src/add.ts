@@ -2,6 +2,7 @@ import { KT_Path as path } from "kt-io";
 import { KT_ProjectMove as move } from "./move";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
 import { KT_ProjectFind as find } from "./find";
+import { KT_AeProjectPath } from "./path";
 
 type CompOptions = {
     name: string;
@@ -114,7 +115,7 @@ class __KT_ProjectAdd {
 
     compFromFootage = (footage: _ItemClasses, options: CompOptions): CompItem | false => {
         if (!is.footage(footage) && !is.comp(footage)) return false;
-        options.name = path.stripFileExtension(footage.name) || "Comp";
+        options.name = options.name || KT_AeProjectPath.decodeItemName(path.stripFileExtension(footage.name) || "Comp");
         options.width = footage.width;
         options.height = footage.height;
         options.pixelAspect = footage.pixelAspect;
