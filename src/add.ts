@@ -113,7 +113,7 @@ class __KT_ProjectAdd {
     };
 
     compFromFootage = (footage: _ItemClasses, options: CompOptions): CompItem | false => {
-        if (!is.footage(footage)) return false;
+        if (!is.footage(footage) && !is.comp(footage)) return false;
         options.name = path.stripFileExtension(footage.name) || "Comp";
         options.width = footage.width;
         options.height = footage.height;
