@@ -3,6 +3,7 @@ import { KT_AeIs as is } from "kt-ae-is-checkers";
 import { KT_ProjectAdd as add } from "./add";
 import { aeExtensions } from ".//aeExtensionValidators";
 import { KT_ProjectFind as find } from "./find";
+import { KT_AeProjectPath } from "./path";
 type KT_ImportOptionsParams = {
     path: string | string[]; // Path on disk to import from
     recursive?: boolean; // Whether to import folders recursively
@@ -154,6 +155,8 @@ class __KT_ProjectImport {
                     continue;
                 }
                 const importedItem = app.project.importFile(importOptions);
+                //sanitize name
+
                 if (tempOptions.parent) {
                     if (is.folder(tempOptions.parent)) {
                         importedItem.parentFolder = tempOptions.parent;
@@ -180,8 +183,9 @@ class __KT_ProjectImport {
                     }
                 }
                 if (tempOptions.toComp && importOptions.importAs !== ImportAsType.COMP && is.footage(importedItem)) {
+                    const compName = KT_Path.stripFileExtension(importedItem.name) || "Comp";
                     const comp = add.compFromFootage(importedItem, {
-                        name: KT_Path.stripFileExtension(importedItem.name) || "Comp",
+                        name: KT_AeProjectPath.decodeItemName(compName),
                         parentFolder: typeof tempOptions.compFolder === "string" ? tempOptions.compFolder : undefined,
                     });
                     if (comp && tempOptions.compFolder) {

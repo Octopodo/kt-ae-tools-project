@@ -175,6 +175,19 @@ class __KT_AeProjectPath {
     isPath = (path: string): boolean => {
         return path.indexOf(this.separator) === 0;
     };
+
+    decodeItemName = (name: string): string => {
+        // Decodifica caracteres URL-encoded comunes en After Effects
+        let decoded = name;
+        decoded = decoded.split("%20").join(" ");
+        decoded = decoded.split("%2F").join("/");
+        decoded = decoded.split("%5C").join("\\");
+        decoded = decoded.split("%2E").join(".");
+        decoded = decoded.split("%2D").join("-");
+        decoded = decoded.split("%5F").join("_");
+        // Add more as needed
+        return decoded;
+    };
 }
 
 const KT_AeProjectPath = new __KT_AeProjectPath();

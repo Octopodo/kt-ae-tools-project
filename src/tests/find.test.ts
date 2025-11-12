@@ -343,4 +343,15 @@ describe("KT_ProjectFind", () => {
             expect(namesFound.length).toBeGreaterThanOrEqual(2);
         });
     });
+
+    describe("root folder restriction", () => {
+        it("should find items only within specified root folder", () => {
+            const found = KT_ProjectFind.items({
+                root: testFolder1,
+                startsWith: "TestComp",
+            });
+            expect(found.length).toBe(1);
+            expect(found[0].name).toBe("TestComp2");
+        });
+    });
 });

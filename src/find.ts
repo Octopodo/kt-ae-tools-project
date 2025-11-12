@@ -49,12 +49,7 @@ class __KT_ProjectFind {
             if (expectedArray.length > 0 && is.folder(expectedArray[0])) {
                 const rootFolder = expectedArray[0] as FolderItem;
                 let parent = item.parentFolder;
-                while (parent) {
-                    if (parent.id === rootFolder.id) {
-                        return true;
-                    }
-                    parent = parent.parentFolder;
-                }
+                return parent === rootFolder;
             }
             return false;
         },

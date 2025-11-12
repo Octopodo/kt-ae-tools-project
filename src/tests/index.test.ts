@@ -1,10 +1,10 @@
 // import "./add.test";
-import "./find.test";
+// import "./find.test";
 // import "./move.test";
 // import "./path.test";
 // import "./remove.test";
 // import "./duplicate.test";
-// import "./import.test";
+import "./import.test";
 
 // import "./debug.test";
 import { KT_Core } from "kt-core";
