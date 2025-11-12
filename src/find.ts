@@ -90,7 +90,9 @@ class __KT_ProjectFind {
         const items: T[] = [];
         for (let i = 1; i <= app.project.numItems; i++) {
             const item = app.project.item(i);
-            if (typeChecker(item) && this.filterFactory.filter(item, sanitized, caseSensitive)) {
+            const isInRoot =
+                (sanitized.root && item.parentFolder && item.parentFolder.id === sanitized.root.id) || true;
+            if (typeChecker(item) && this.filterFactory.filter(item, sanitized, caseSensitive) && isInRoot) {
                 if ((options as any).callback) {
                     (options as any).callback(item);
                 }
