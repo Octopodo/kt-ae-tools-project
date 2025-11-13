@@ -15,6 +15,7 @@ type KT_ImportOptionsParams = {
     footageFolder?: FolderItem | string; // Folder to import footage into
     compFolder?: FolderItem | string; // Folder to import comps into. Only used if importAs is "comp" or toComp is true
     importOptions?: ImportOptions; // Additional import options passed to app.project.importFile
+    returnAs?: "comp" | "comps" | ""; // Return imported items as comps if toComp is true
 };
 
 type KT_ImportOptions = {
@@ -28,6 +29,7 @@ type KT_ImportOptions = {
     footageFolder: FolderItem | string | undefined;
     compFolder: FolderItem | string | undefined;
     importOptions: ImportOptions | undefined;
+    returnAs: "comp" | "comps" | "";
 };
 type KT_ImportSingleParams = string | string[];
 
@@ -188,16 +190,22 @@ class __KT_ProjectImport {
                         name: KT_AeProjectPath.decodeItemName(compName),
                         parentFolder: typeof tempOptions.compFolder === "string" ? tempOptions.compFolder : undefined,
                     });
-                    if (comp && tempOptions.compFolder) {
-                        const targetFolder =
-                            typeof tempOptions.compFolder === "string"
-                                ? find.folders(tempOptions.compFolder)[0]
-                                : tempOptions.compFolder;
-                        if (targetFolder) {
-                            comp.parentFolder = targetFolder;
-                        } else {
-                            const newFolder = add.folder({ name: tempOptions.compFolder as string });
-                            comp.parentFolder = newFolder;
+                    if (comp) {
+                        if (tempOptions.compFolder) {
+                            const targetFolder =
+                                typeof tempOptions.compFolder === "string"
+                                    ? find.folders(tempOptions.compFolder)[0]
+                                    : tempOptions.compFolder;
+                            if (targetFolder) {
+                                comp.parentFolder = targetFolder;
+                            } else {
+                                const newFolder = add.folder({ name: tempOptions.compFolder as string });
+                                comp.parentFolder = newFolder;
+                            }
+                        }
+                        if (tempOptions.returnAs === "comp" || tempOptions.returnAs === "comps") {
+                            importedItems.push(comp);
+                            continue;
                         }
                     }
                 }
@@ -230,6 +238,7 @@ class __KT_ProjectImport {
             footageFolder: options.footageFolder,
             compFolder: options.compFolder,
             importOptions: options.importOptions,
+            returnAs: options.returnAs || "",
         };
         return sanitizedOptions;
     };

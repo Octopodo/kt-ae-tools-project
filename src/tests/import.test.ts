@@ -183,30 +183,6 @@ describe("KT_ProjectImport", () => {
         });
     });
 
-    // describe("sequences()", () => {
-    //     it("should import image sequences", () => {
-    //         const result = KT_ProjectImport.sequences({ path: IO.path.join(sequenceFolder, "sequence_001.jpg") });
-    //         expect(result instanceof Array).toBe(true);
-    //         importedItems.push(...result);
-    //     });
-
-    //     it("should import sequence with asSequence option", () => {
-    //         const result = KT_ProjectImport.files({
-    //             path: IO.path.join(sequenceFolder, "sequence_001.jpg"),
-    //             asSequence: true,
-    //         });
-    //         expect(result instanceof Array).toBe(true);
-    //         importedItems.push(...result);
-    //     });
-
-    //     it("should import all sequence files from sequence folder when passing folder path", () => {
-    //         const result = KT_ProjectImport.sequences({ path: sequenceFolder });
-    //         expect(result instanceof Array).toBe(true);
-    //         expect(result.length).toBeGreaterThanOrEqual(3); // sequence_001.jpg, sequence_002.jpg, sequence_003.jpg
-    //         importedItems.push(...result);
-    //     });
-    // });
-
     describe("footage()", () => {
         it("should import all footage types from mixed folder", () => {
             const result = KT_ProjectImport.footage({ path: mixedFolder });
@@ -392,119 +368,21 @@ describe("KT_ProjectImport", () => {
             importedItems.push(...result, ...footageFolders, ...compFolders);
         });
     });
-
-    // describe("corner cases and conflicting options", () => {
-    //     it("should handle recursive and flat options together in folders", () => {
-    //         const result = KT_ProjectImport.folders({ path: nestedFolder, recursive: true, flat: true });
-    //         expect(result instanceof Array).toBe(true);
-    //         // Should prioritize one over the other or handle gracefully
-    //         importedItems.push(...result);
-    //     });
-
-    //     it("should handle importAs comp with toComp option", () => {
-    //         const itemPath = IO.path.join(imageFolder, "image_1.jpg");
-    //         const result = KT_ProjectImport.files({
-    //             path: itemPath,
-    //             importAs: "comp",
-    //             toComp: true,
-    //         });
-    //         expect(result instanceof Array).toBe(true);
-    //         importedItems.push(...result);
-    //     });
-
-    //     it("should handle parent folder with footageFolder option", () => {
-    //         const testFolder = KT_ProjectAdd.folder({ name: "TestParent" });
-    //         const result = KT_ProjectImport.footage({
-    //             path: mixedFolder,
-    //             parent: testFolder,
-    //             footageFolder: testFolder,
-    //         });
-    //         expect(result instanceof Array).toBe(true);
-    //         importedItems.push(...result);
-    //         KT_ProjectRemove.item(testFolder);
-    //     });
-
-    //     // it("should handle asSequence with footage import", () => {
-    //     //     const result = KT_ProjectImport.footage({
-    //     //         path: IO.path.join(sequenceFolder, "sequence_001.jpg"),
-    //     //         asSequence: true,
-    //     //     });
-    //     //     expect(result instanceof Array).toBe(true);
-    //     //     importedItems.push(...result);
-    //     // });
-
-    //     it("should handle mixed valid and invalid paths", () => {
-    //         const audioPath = IO.path.join(audioFolder, "audio_1.wav");
-    //         const videoPath = IO.path.join(videoFolder, "video_1.mp4");
-    //         const result = KT_ProjectImport.files({
-    //             path: [audioPath, "invalid/path.xyz", videoPath],
-    //         });
-    //         expect(result instanceof Array).toBe(true);
-    //         // Should import valid files and skip invalid ones
-    //         importedItems.push(...result);
-    //     });
-
-    //     it("should handle undefined options gracefully", () => {
-    //         const audioPath = IO.path.join(audioFolder, "audio_1.wav");
-    //         const result = KT_ProjectImport.files({
-    //             path: audioPath,
-    //             recursive: undefined,
-    //             flat: undefined,
-    //             parent: undefined,
-    //             importAs: undefined,
-    //             toComp: undefined,
-    //             asSequence: undefined,
-    //             footageFolder: undefined,
-    //             compFolder: undefined,
-    //             importOptions: undefined,
-    //         });
-    //         expect(result instanceof Array).toBe(true);
-    //         importedItems.push(...result);
-    //     });
-
-    //     it("should handle null values in options", () => {
-    //         const audioPath = IO.path.join(audioFolder, "audio_1.wav");
-    //         const result = KT_ProjectImport.files({
-    //             path: audioPath,
-    //             parent: null as any,
-    //             footageFolder: null as any,
-    //         });
-    //         expect(result instanceof Array).toBe(true);
-    //         importedItems.push(...result);
-    //     });
-
-    //     it("should handle importAs with invalid value", () => {
-    //         const audioPath = IO.path.join(audioFolder, "audio_1.wav");
-    //         const result = KT_ProjectImport.files({
-    //             path: audioPath,
-    //             importAs: "invalid_type",
-    //         });
-    //         expect(result instanceof Array).toBe(true);
-    //         importedItems.push(...result);
-    //     });
-
-    //     it("should handle conflicting folder options", () => {
-    //         const testFolder1 = KT_ProjectAdd.folder({ name: "TestFolder1" });
-    //         const testFolder2 = KT_ProjectAdd.folder({ name: "TestFolder2" });
-    //         const audioPath = IO.path.join(audioFolder, "audio_1.wav");
-    //         const result = KT_ProjectImport.files({
-    //             path: audioPath,
-    //             parent: testFolder1,
-    //             footageFolder: testFolder2,
-    //         });
-    //         expect(result instanceof Array).toBe(true);
-    //         importedItems.push(...result);
-    //         KT_ProjectRemove.item(testFolder1);
-    //         KT_ProjectRemove.item(testFolder2);
-    //     });
-
-    //     it("should handle sequence import with non-sequence files", () => {
-    //         const audioPath = IO.path.join(audioFolder, "audio_1.wav"); // Not a sequence
-    //         const result = KT_ProjectImport.sequences({
-    //             path: audioPath,
-    //         });
-    //         expect(result instanceof Array).toBe(true);
-    //         importedItems.push(...result);
-    //     });
-    // });
+    describe("Return as", () => {
+        it("should return imported items as a comps when returnAs is 'comps'", () => {
+            const imagePath1 = IO.path.join(imageFolder, "image_1.jpg");
+            const imagePath2 = IO.path.join(imageFolder, "image_2.jpg");
+            const result = KT_ProjectImport.files({
+                path: [imagePath1, imagePath2],
+                toComp: true,
+                returnAs: "comps",
+            });
+            expect(result instanceof Array).toBe(true);
+            expect(result.length).toBeGreaterThanOrEqual(2);
+            for (let i = 0; i < result.length; i++) {
+                expect(is.comp(result[i])).toBe(true);
+            }
+            importedItems.push(...result);
+        });
+    });
 });
