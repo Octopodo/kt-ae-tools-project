@@ -6,6 +6,7 @@ import { it } from "kt-testing-suite-core";
 type FindProjectOptionParams = {
     name?: string | string[] | RegExp | RegExp[];
     path?: string | string[] | RegExp | RegExp[];
+    relativePath?: string | string[] | RegExp | RegExp[];
     startsWith?: string | string[] | RegExp | RegExp[];
     endsWith?: string | string[] | RegExp | RegExp[];
     contains?: string | string[] | RegExp | RegExp[];
@@ -23,10 +24,22 @@ type FindProjectParams = FindProjectOptionParams | FindProjectUniqueParam;
 class __KT_ProjectFind {
     private filterFactory = new KT_FilterChainFactory({
         name: null,
+
+        //TODO:
+        // Now,
         path: (item: _ItemClasses, expectedArray: any[]) => {
             const itemPath = pPath.get(item);
             for (let i = 0; i < expectedArray.length; i++) {
+                // if (itemPath === expectedArray[i] || itemPath === expectedArray[i]) return true;
                 if (itemPath === expectedArray[i]) return true;
+            }
+            return false;
+        },
+        relativePath: (item: _ItemClasses, expectedArray: any[]) => {
+            const itemFullPath = pPath.get(item);
+            const itemRelPath = pPath.getParent(itemFullPath);
+            for (let i = 0; i < expectedArray.length; i++) {
+                if (itemFullPath === expectedArray[i] || itemRelPath === expectedArray[i]) return true;
             }
             return false;
         },

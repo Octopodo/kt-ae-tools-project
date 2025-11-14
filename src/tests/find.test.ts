@@ -102,6 +102,13 @@ describe("KT_ProjectFind", () => {
             expect(found[0].name).toBe("TestComp2");
         });
 
+        it("should find items by relative path", () => {
+            const comp2RelPath = pPath.getParent(pPath.get(testComp2));
+            const found = KT_ProjectFind.items({ name: testComp2.name, relativePath: comp2RelPath });
+            expect(found.length).toBe(1);
+            expect(found[0].name).toBe("TestComp2");
+        });
+
         it("should handle case insensitive search", () => {
             const found = KT_ProjectFind.items({ name: "testcomp1", caseSensitive: false });
             expect(found.length).toBe(1);
