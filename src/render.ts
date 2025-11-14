@@ -13,11 +13,15 @@ type KT_RenderOptions = {
 class __KT_ProjectRender {
     private DEFAULTE_TEMPLATE = "H.264 - Match Render Settings - 40 Mbps";
 
-    sendToAME = (options: KT_RenderOptions): RenderQueueItem[] => {
+    sendToAME = (options: KT_RenderOptions) => {
         const RQItems: RenderQueueItem[] = this.addToQueue(options);
         options.renderInmedately = options.renderInmedately || false;
         if (app.project.renderQueue.canQueueInAME) {
             app.project.renderQueue.queueInAME(options.renderInmedately);
+        }
+        for (let i = 0; i < RQItems.length; i++) {
+            const rqItem = RQItems[i];
+            rqItem.remove();
         }
         return RQItems;
     };
