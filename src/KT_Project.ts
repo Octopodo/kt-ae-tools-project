@@ -5,6 +5,7 @@ import { KT_ProjectMove } from "./move";
 import { KT_ProjectRemove } from "./remove";
 import { KT_ProjectDuplicate } from "./duplicate";
 import { KT_AeProjectPath } from "./path";
+import { KT_ProjectRender } from "./render";
 class __KT_Project {
     private name = "KtAeProject";
     private version = "1.0.0";
@@ -15,6 +16,7 @@ class __KT_Project {
     public remove = KT_ProjectRemove;
     public duplicate = KT_ProjectDuplicate;
     public path = KT_AeProjectPath;
+    public render = KT_ProjectRender;
     constructor() {
         $.writeln("KtAeProject constructor");
     }

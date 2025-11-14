@@ -55,16 +55,13 @@ class __KT_ProjectAdd {
         options.frameRate = options.frameRate || this.__DEFAULT_COMP_FRAME_RATE;
         options.duration = options.duration || this.__DEFAULT_COMP_DURATION;
 
-        options.width = Math.min(Math.floor(options.width), this.__MAX_COMP_WIDTH);
-        options.height = Math.min(Math.floor(options.height), this.__MAX_COMP_HEIGHT);
+        options.width = Math.min(options.width, this.__MAX_COMP_WIDTH);
+        options.height = Math.min(options.height, this.__MAX_COMP_HEIGHT);
         options.pixelAspect = Math.min(options.pixelAspect, this.__MAX_COMP_PIXEL_ASPECT);
-        options.frameRate = Math.min(Math.floor(options.frameRate), this.__MAX_COMP_FRAME_RATE);
-        options.duration = Math.min(Math.floor(options.duration), this.__MAX_COMP_DURATION);
+        options.frameRate = Math.min(options.frameRate, this.__MAX_COMP_FRAME_RATE);
+        options.duration = Math.min(options.duration, this.__MAX_COMP_DURATION);
         options.width = Math.max(options.width, this.__MIN_COMP_WIDTH);
-        options.height = Math.max(options.height, this.__MIN_COMP_HEIGHT);
-        options.pixelAspect = Math.max(options.pixelAspect, this.__MIN_COMP_PIXEL_ASPECT);
-        options.frameRate = Math.max(options.frameRate, this.__MIN_COMP_FRAME_RATE);
-        options.duration = Math.max(options.duration, this.__MIN_COMP_DURATION);
+
         return options;
     };
 
@@ -119,7 +116,7 @@ class __KT_ProjectAdd {
         options.width = footage.width;
         options.height = footage.height;
         options.pixelAspect = footage.pixelAspect;
-        options.duration = is.image(footage) ? footage.duration : this.__DEFAULT_COMP_DURATION;
+        options.duration = is.image(footage) ? this.__DEFAULT_COMP_DURATION : footage.duration;
         options.frameRate = footage.frameRate;
 
         const parsedOptions = this.__sanitzeCompValues(options);

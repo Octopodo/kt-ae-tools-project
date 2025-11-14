@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, afterEach, expect } from "kt-testing-suite-core";
+import { describe, it, beforeEach, afterEach, expect, throwError } from "kt-testing-suite-core";
 import { KT_ProjectImport } from "../import";
 import { KT_ProjectFind } from "../find";
 import { KT_ProjectRemove } from "../remove";
@@ -384,5 +384,29 @@ describe("KT_ProjectImport", () => {
             }
             importedItems.push(...result);
         });
+    });
+
+    it("sould create a comp from footage with video duration", () => {
+        const videoPath = IO.path.join(videoFolder, "video_1.mp4");
+        const comps = KT_ProjectImport.videos({ path: videoPath, toComp: true, returnAs: "comp" });
+        expect(comps instanceof Array).toBe(true);
+        if (!(comps[0] instanceof CompItem)) throwError("Imported item is not a CompItem");
+        const compItem = comps[0];
+        const footageDuration = (compItem.layers[1] as AVLayer).source.duration;
+        expect(is.comp(compItem)).toBe(true);
+        expect(compItem.duration).toBe(footageDuration);
+        importedItems.push(compItem);
+    });
+
+    it("sould create a comp from footage with image default duration", () => {
+        const imagePath = IO.path.join(imageFolder, "image_1.jpg");
+        const comps = KT_ProjectImport.images({ path: imagePath, toComp: true, returnAs: "comp" });
+        expect(comps instanceof Array).toBe(true);
+        if (!(comps[0] instanceof CompItem)) throwError("Imported item is not a CompItem");
+        const compItem = comps[0];
+        if (!is.comp(compItem)) throwError("Imported item is not a CompItem");
+        const defaultImageDuration = 10; // As per KT_ProjectAdd default
+        expect(compItem.duration).toBe(defaultImageDuration);
+        importedItems.push(compItem);
     });
 });
