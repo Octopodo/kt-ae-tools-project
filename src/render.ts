@@ -3,7 +3,7 @@ import { KT_StringUtils as KT_String } from "kt-core";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
 
 type KT_RenderOptions = {
-    comps: CompItem | CompItem[];
+    comps: _ItemClasses | _ItemClasses[];
     path: string;
     template?: string;
     renderInmedately?: boolean;
