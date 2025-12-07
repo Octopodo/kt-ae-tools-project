@@ -5,6 +5,7 @@ import { KT_ProjectRemove } from "../remove";
 import { KT_AeProjectPath as pPath } from "../path";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
 import { KT_ProjectMove } from "../move";
+import { KT_LazyCache } from "../lazyCache";
 
 describe("KT_ProjectFind", () => {
     let testFolder1: FolderItem;
@@ -13,8 +14,13 @@ describe("KT_ProjectFind", () => {
     let testComp2: CompItem;
     let subFolder1: FolderItem;
     let subSubFolder1: FolderItem;
+    let startTime: number;
+    let endTime: number;
 
     beforeEach(() => {
+        // Ensure cache is fresh to avoid stale objects from previous tests
+        KT_LazyCache.refresh();
+
         // Create test folder structure
         testFolder1 = KT_ProjectAdd.folder({ name: "TestFolder1" }) as FolderItem;
         testFolder2 = KT_ProjectAdd.folder({ name: "TestFolder2" }) as FolderItem;
@@ -40,6 +46,7 @@ describe("KT_ProjectFind", () => {
             frameRate: 30,
             parentFolder: testFolder1,
         }) as CompItem;
+        startTime = new Date().getTime();
     });
 
     afterEach(() => {
@@ -53,6 +60,9 @@ describe("KT_ProjectFind", () => {
         if (subFolder1) subFolder1.remove();
         if (testFolder2) testFolder2.remove();
         if (testFolder1) testFolder1.remove();
+
+        endTime = new Date().getTime();
+        $.writeln("    ⏱️Search performance: " + (endTime - startTime) + " ms");
     });
 
     describe("items()", () => {
