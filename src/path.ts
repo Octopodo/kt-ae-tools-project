@@ -14,6 +14,10 @@
 class __KT_AeProjectPath {
     private separator = "//";
 
+    getSeparator = (): string => {
+        return this.separator;
+    };
+
     get = (item: _ItemClasses): string => {
         const parts: string[] = [];
         let current: _ItemClasses = item;
