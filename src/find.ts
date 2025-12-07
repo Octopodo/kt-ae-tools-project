@@ -1,7 +1,7 @@
 import { KT_StringUtils, KT_FilterChainFactory } from "kt-core";
 import { KT_AeProjectPath as pPath } from "./path";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
-import { it } from "kt-testing-suite-core";
+import { KT_LazyCache, KT_CacheStore } from "./lazyCache";
 
 type FindProjectOptionParams = {
     name?: string | string[] | RegExp | RegExp[];
@@ -24,13 +24,9 @@ type FindProjectParams = FindProjectOptionParams | FindProjectUniqueParam;
 class __KT_ProjectFind {
     private filterFactory = new KT_FilterChainFactory({
         name: null,
-
-        //TODO:
-        // Now,
         path: (item: _ItemClasses, expectedArray: any[]) => {
             const itemPath = pPath.get(item);
             for (let i = 0; i < expectedArray.length; i++) {
-                // if (itemPath === expectedArray[i] || itemPath === expectedArray[i]) return true;
                 if (itemPath === expectedArray[i]) return true;
             }
             return false;
@@ -69,58 +65,112 @@ class __KT_ProjectFind {
     });
 
     items = (options: FindProjectParams | number | string): _ItemClasses[] => {
-        return this.__findItems(is.item, options);
+        return this.__findItems(KT_LazyCache.allItems, options);
     };
 
     folders = (options: FindProjectParams | number | string): FolderItem[] => {
-        return this.__findItems(is.folder, options);
+        return this.__findItems(KT_LazyCache.folders, options) as FolderItem[];
     };
 
     comps = (options: FindProjectParams | number | string): CompItem[] => {
-        return this.__findItems(is.comp, options);
+        return this.__findItems(KT_LazyCache.comps, options) as CompItem[];
     };
 
     footage = (options: FindProjectParams | number | string): FootageItem[] => {
-        return this.__findItems(is.footage, options);
+        return this.__findItems(KT_LazyCache.footage, options) as FootageItem[];
     };
 
     audios = (options: FindProjectParams | number | string): FootageItem[] => {
-        return this.__findItems(is.audio, options);
+        return this.__findItems(KT_LazyCache.audio, options) as FootageItem[];
     };
 
     videos = (options: FindProjectParams | number | string): FootageItem[] => {
-        return this.__findItems(is.video, options);
+        return this.__findItems(KT_LazyCache.video, options) as FootageItem[];
     };
 
     images = (options: FindProjectParams | number | string): FootageItem[] => {
-        return this.__findItems(is.image, options);
+        return this.__findItems(KT_LazyCache.images, options) as FootageItem[];
     };
 
     solids = (options: FindProjectParams | number | string): FootageItem[] => {
-        return [];
+        KT_LazyCache.scanSolids();
+        return this.__findItems(KT_LazyCache.solids, options) as FootageItem[];
     };
 
-    private __findItems = <T extends _ItemClasses>(
-        typeChecker: (item: _ItemClasses) => item is T,
-        options: FindProjectParams
-    ): T[] => {
+    private __findItems = <T extends _ItemClasses>(cacheStore: KT_CacheStore<T>, options: FindProjectParams): T[] => {
+        KT_LazyCache.init();
+
         if (!options) return [];
+
+        let candidates: T[] = [];
+        let usedOptimizedLookup = false;
+
+        if (typeof options === "number") {
+            const item = cacheStore.getById(options);
+            if (item) candidates = [item];
+            usedOptimizedLookup = true;
+        } else if (typeof options === "string") {
+            if (pPath.isPath(options)) {
+                const item = cacheStore.getByPath(options);
+                if (item) candidates = [item];
+            } else {
+                candidates = cacheStore.getByName(options);
+            }
+            usedOptimizedLookup = true;
+        } else if (options instanceof RegExp) {
+            candidates = cacheStore.getByRegExp(options);
+            usedOptimizedLookup = true;
+        } else if (typeof options === "object" && !Array.isArray(options)) {
+            const opts = options as FindProjectOptionParams;
+            const isCaseSensitive = opts.caseSensitive !== false;
+
+            // Priority 1: ID
+            if (typeof opts.id === "number") {
+                const item = cacheStore.getById(opts.id);
+                if (item) candidates = [item];
+                usedOptimizedLookup = true;
+            }
+            // Priority 2: Path
+            else if (typeof opts.path === "string") {
+                const item = cacheStore.getByPath(opts.path);
+                if (item) candidates = [item];
+                usedOptimizedLookup = true;
+            }
+            // Priority 3: Name (String or RegExp)
+            else if (typeof opts.name === "string") {
+                if (isCaseSensitive) {
+                    candidates = cacheStore.getByName(opts.name);
+                } else {
+                    // Optimized case-insensitive search: Convert to RegExp
+                    const escaped = opts.name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+                    const regex = new RegExp(`^${escaped}$`, "i");
+                    candidates = cacheStore.getByRegExp(regex);
+                }
+                usedOptimizedLookup = true;
+            } else if (opts.name instanceof RegExp) {
+                candidates = cacheStore.getByRegExp(opts.name);
+                usedOptimizedLookup = true;
+            }
+        }
+
+        if (!usedOptimizedLookup) {
+            candidates = cacheStore.getAll();
+        }
 
         const sanitized = this.filterFactory.sanitize(options);
         const caseSensitive = (options as any).caseSensitive !== false;
+        const filteredItems: T[] = [];
 
-        const items: T[] = [];
-        for (let i = 1; i <= app.project.numItems; i++) {
-            const item = app.project.item(i);
-
-            if (typeChecker(item) && this.filterFactory.filter(item, sanitized, caseSensitive)) {
+        for (const item of candidates) {
+            if (this.filterFactory.filter(item, sanitized, caseSensitive)) {
                 if ((options as any).callback) {
                     (options as any).callback(item);
                 }
-                items.push(item);
+                filteredItems.push(item);
             }
         }
-        return items;
+
+        return filteredItems;
     };
 }
 
