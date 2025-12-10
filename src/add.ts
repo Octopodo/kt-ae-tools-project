@@ -3,6 +3,7 @@ import { KT_ProjectMove as move } from "./move";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
 import { KT_ProjectFind as find } from "./find";
 import { KT_AeProjectPath } from "./path";
+import { KT_LazyCache as cache } from "./lazyCache";
 
 type CompOptions = {
     name: string;
@@ -55,12 +56,17 @@ class __KT_ProjectAdd {
         options.frameRate = options.frameRate || this.__DEFAULT_COMP_FRAME_RATE;
         options.duration = options.duration || this.__DEFAULT_COMP_DURATION;
 
-        options.width = Math.min(options.width, this.__MAX_COMP_WIDTH);
-        options.height = Math.min(options.height, this.__MAX_COMP_HEIGHT);
-        options.pixelAspect = Math.min(options.pixelAspect, this.__MAX_COMP_PIXEL_ASPECT);
-        options.frameRate = Math.min(options.frameRate, this.__MAX_COMP_FRAME_RATE);
-        options.duration = Math.min(options.duration, this.__MAX_COMP_DURATION);
-        options.width = Math.max(options.width, this.__MIN_COMP_WIDTH);
+        options.width = Math.max(Math.min(Math.floor(options.width), this.__MAX_COMP_WIDTH), this.__MIN_COMP_WIDTH);
+        options.height = Math.max(Math.min(Math.floor(options.height), this.__MAX_COMP_HEIGHT), this.__MIN_COMP_HEIGHT);
+        options.pixelAspect = Math.max(
+            Math.min(options.pixelAspect, this.__MAX_COMP_PIXEL_ASPECT),
+            this.__MIN_COMP_PIXEL_ASPECT
+        );
+        options.frameRate = Math.max(
+            Math.min(options.frameRate, this.__MAX_COMP_FRAME_RATE),
+            this.__MIN_COMP_FRAME_RATE
+        );
+        options.duration = Math.max(Math.min(options.duration, this.__MAX_COMP_DURATION), this.__MIN_COMP_DURATION);
 
         return options;
     };
@@ -106,7 +112,7 @@ class __KT_ProjectAdd {
             options.frameRate!
         );
         this.__moveToFolder(comp, options);
-
+        cache.add(comp);
         return comp;
     };
 
@@ -130,7 +136,7 @@ class __KT_ProjectAdd {
     folder = (options: FolderOptions): FolderItem => {
         const folder = app.project.items.addFolder(options.name);
         this.__moveToFolder(folder, options);
-
+        cache.add(folder);
         return folder;
     };
 
