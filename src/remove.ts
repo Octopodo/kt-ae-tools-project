@@ -1,6 +1,6 @@
 import { KT_AeProjectPath as path } from "./path";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
-
+import { KT_LazyCache as cache } from "./lazyCache";
 class __KT_ProjectRemove {
     /**
      * Removes items from the project.
@@ -8,16 +8,10 @@ class __KT_ProjectRemove {
      * @param items - The item(s) to remove. Can be a single item, an array of items, or a path string.
      * @returns true if all removals succeeded, false otherwise.
      */
-    remove = (items: _ItemClasses | _ItemClasses[] | string, checker: (item: any) => boolean): boolean => {
+    remove = (items: _ItemClasses | _ItemClasses[], checker: (item: any) => boolean): boolean => {
         // Resolve items to remove
         let itemsToRemove: _ItemClasses[] = [];
-        if (typeof items === "string") {
-            const resolved = path.resolve(app.project.rootFolder, items);
-            if (!resolved) {
-                return false; // Invalid item path
-            }
-            itemsToRemove = [resolved];
-        } else if (items instanceof Array) {
+        if (Array.isArray(items)) {
             itemsToRemove = items;
         } else {
             itemsToRemove = [items];
@@ -30,6 +24,9 @@ class __KT_ProjectRemove {
                 continue; // Item does not match the type checker
             }
             try {
+                const lc = cache;
+                $.write(lc);
+                cache.remove(item);
                 item.remove();
             } catch (e) {
                 removeOk = false;
@@ -39,32 +36,32 @@ class __KT_ProjectRemove {
         return removeOk;
     };
 
-    comp = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
+    comp = (items: _ItemClasses | _ItemClasses[]): boolean => {
         return this.remove(items, is.comp);
     };
 
-    folder = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
+    folder = (items: _ItemClasses | _ItemClasses[]): boolean => {
         return this.remove(items, is.folder);
     };
 
-    audio = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
+    audio = (items: _ItemClasses | _ItemClasses[]): boolean => {
         return this.remove(items, is.audio);
     };
 
-    footage = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
+    footage = (items: _ItemClasses | _ItemClasses[]): boolean => {
         return this.remove(items, is.footage);
     };
-    item = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
+    item = (items: _ItemClasses | _ItemClasses[]): boolean => {
         return this.remove(items, (item) => true);
     };
 
-    image = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
+    image = (items: _ItemClasses | _ItemClasses[]): boolean => {
         return this.remove(items, is.image);
     };
-    video = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
+    video = (items: _ItemClasses | _ItemClasses[]): boolean => {
         return this.remove(items, is.video);
     };
-    solid = (items: _ItemClasses | _ItemClasses[] | string): boolean => {
+    solid = (items: _ItemClasses | _ItemClasses[]): boolean => {
         return this.remove(items, is.solid);
     };
 }
