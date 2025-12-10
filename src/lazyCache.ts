@@ -8,6 +8,7 @@ export class KT_CacheStore<T extends _ItemClasses> {
     private _byId: { [key: string]: T } = {};
     private _byName: { [key: string]: T[] } = {};
     private _byPath: { [key: string]: T } = {};
+    private _pathsById: { [key: string]: string } = {}; // Inverse index for O(1) path retrieval
     private _items: T[] = [];
 
     // Optimization for RegExp search
@@ -47,6 +48,7 @@ export class KT_CacheStore<T extends _ItemClasses> {
 
         // Path Index
         this._byPath[path] = item;
+        this._pathsById[item.id.toString()] = path;
     }
 
     remove(item: T) {
@@ -62,11 +64,12 @@ export class KT_CacheStore<T extends _ItemClasses> {
         delete this._byId[item.id.toString()];
 
         // Remove from Path Index
-        // WE use KT_AeProjectPath to calculate the path key, offering O(1) access
-        const path = KT_AeProjectPath.get(item);
+        // Use our internal index for O(1) access
+        const path = this._pathsById[item.id.toString()] || KT_AeProjectPath.get(item);
         if (this._byPath[path] && this._byPath[path].id === item.id) {
             delete this._byPath[path];
         }
+        delete this._pathsById[item.id.toString()];
 
         // Remove from Name Index
         if (this._byName[item.name]) {
@@ -88,10 +91,51 @@ export class KT_CacheStore<T extends _ItemClasses> {
         }
     }
 
+    /**
+     * Updates an item in the cache.
+     * Handles path changes efficiently using the internal index.
+     */
+    update(item: T, newPath?: string) {
+        const idStr = item.id.toString();
+        const oldPath = this._pathsById[idStr];
+        const path = newPath || KT_AeProjectPath.get(item);
+
+        if (oldPath !== path) {
+            if (oldPath && this._byPath[oldPath]) delete this._byPath[oldPath];
+            this._byPath[path] = item;
+            this._pathsById[idStr] = path;
+        }
+    }
+
+    /**
+     * Efficiently updates paths for items starting with a specific prefix.
+     * Used for cascading folder moves.
+     */
+    renamePathPrefix(oldPrefix: string, newPrefix: string) {
+        for (const path in this._byPath) {
+            if (this._byPath.hasOwnProperty(path)) {
+                if (path.indexOf(oldPrefix) === 0) {
+                    const item = this._byPath[path];
+                    const suffix = path.substring(oldPrefix.length);
+                    const newPath = newPrefix + suffix;
+
+                    delete this._byPath[path];
+                    this._byPath[newPath] = item;
+                    this._pathsById[item.id.toString()] = newPath;
+                }
+            }
+        }
+    }
+
+    getPathById(id: number): string | undefined {
+        return this._pathsById[id.toString()];
+    }
+
     clear() {
         this._byId = {};
         this._byName = {};
         this._byPath = {};
+        this._pathsById = {};
         this._items = [];
         this._allNamesString = "";
     }
@@ -117,8 +161,11 @@ export class KT_CacheStore<T extends _ItemClasses> {
         // We force 'g' (global) for iteration and 'm' (multiline) so ^$ work per line
         // . won't match \n, preventing catastrophic backtracking across names
         let flags = "gm";
+        // We force 'i' (case-insensitive) for matching
+        // @ts-ignore
         if (regex.ignoreCase) flags += "i";
 
+        // @ts-ignore
         const globalRegex = new RegExp(regex.source, flags);
 
         // If the regex matches empty string, we need to prevent infinite loop manually if engine doesn't handle it
@@ -133,7 +180,9 @@ export class KT_CacheStore<T extends _ItemClasses> {
             if (safetyCounter++ > maxIterations) break; // Emergency break
 
             // Ensure we advance if match is empty (though should not happen with useful regexes)
+            // @ts-ignore
             if (match.index === globalRegex.lastIndex) {
+                // @ts-ignore
                 globalRegex.lastIndex++;
             }
 
@@ -243,6 +292,64 @@ class __KT_LazyCache {
             if (is.audio(item)) this.audio.remove(item as FootageItem);
             if (is.video(item)) this.video.remove(item as FootageItem);
             if (is.image(item)) this.images.remove(item as FootageItem);
+        }
+    };
+
+    /**
+     * Updates an item in the cache.
+     * Efficiently handles path changes, including cascading updates for folders.
+     */
+    update = (items: _ItemClasses[] | _ItemClasses): void => {
+        if (!this._initialized) return;
+
+        if (!Array.isArray(items)) items = [items];
+        for (const item of items) {
+            this.singleUpdate(item);
+        }
+    };
+    /**
+     * Updates an item in the cache.
+     * Efficiently handles path changes, including cascading updates for folders.
+     */
+    singleUpdate = (item: _ItemClasses): void => {
+        if (!this._initialized) return;
+
+        const newPath = KT_AeProjectPath.get(item);
+        const oldPath = this.allItems.getPathById(item.id);
+
+        // Perform updates only if we have a valid path change
+        // OR if needed for other properties (like name in the future, although name change implies path change usually)
+        if (oldPath && newPath && oldPath !== newPath) {
+            this.allItems.update(item, newPath);
+
+            // Sub-cache updates
+            if (is.comp(item)) this.comps.update(item as CompItem, newPath);
+            if (is.folder(item)) {
+                this.folders.update(item as FolderItem, newPath);
+
+                // FOLDER MOVE CASCADE
+                // If a folder moved, all its descendants need their paths updated in the cache
+                const separator = KT_AeProjectPath.getSeparator();
+                const oldPrefix = oldPath + separator;
+                const newPrefix = newPath + separator;
+
+                // Update all stores
+                this.allItems.renamePathPrefix(oldPrefix, newPrefix);
+                this.comps.renamePathPrefix(oldPrefix, newPrefix);
+                this.folders.renamePathPrefix(oldPrefix, newPrefix);
+                this.footage.renamePathPrefix(oldPrefix, newPrefix);
+                this.images.renamePathPrefix(oldPrefix, newPrefix);
+                this.audio.renamePathPrefix(oldPrefix, newPrefix);
+                this.video.renamePathPrefix(oldPrefix, newPrefix);
+                this.solids.renamePathPrefix(oldPrefix, newPrefix);
+            }
+            if (is.footage(item)) {
+                this.footage.update(item as FootageItem, newPath);
+                if (is.solid(item)) this.solids.update(item as FootageItem, newPath);
+                if (is.audio(item)) this.audio.update(item as FootageItem, newPath);
+                if (is.video(item)) this.video.update(item as FootageItem, newPath);
+                if (is.image(item)) this.images.update(item as FootageItem, newPath);
+            }
         }
     };
 
