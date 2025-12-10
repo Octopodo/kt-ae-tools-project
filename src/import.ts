@@ -4,6 +4,7 @@ import { KT_ProjectAdd as add } from "./add";
 import { aeExtensions } from ".//aeExtensionValidators";
 import { KT_ProjectFind as find } from "./find";
 import { KT_AeProjectPath } from "./path";
+import { KT_LazyCache as cache } from "./lazyCache";
 type KT_ImportOptionsParams = {
     path: string | string[]; // Path on disk to import from
     recursive?: boolean; // Whether to import folders recursively
@@ -157,6 +158,7 @@ class __KT_ProjectImport {
                     continue;
                 }
                 const importedItem = app.project.importFile(importOptions);
+
                 //sanitize name
 
                 if (tempOptions.parent) {
@@ -209,7 +211,7 @@ class __KT_ProjectImport {
                         }
                     }
                 }
-
+                cache.add(importedItem);
                 importedItems.push(importedItem);
             }
         } catch (error: any) {
