@@ -89,7 +89,7 @@ Creates a new folder in the project.
 
 **Returns:**
 
-`FolderItem | false`
+`FolderItem`
 
 **Example:**
 
@@ -116,45 +116,27 @@ const folder = KT_Project.add.folder({
 
 ---
 
-### 📋 solid (Not implemented)
+### 📋 compFromFootage
 
-Creates a new solid (placeholder layer) in the project.
+Creates a new composition matching the properties of a footage item.
 
 **Arguments:**
 
-| Parameter | Type                            | Description                     |
-| --------- | ------------------------------- | ------------------------------- |
-| `options` | [`SolidOptions`](#solidoptions) | Configuration for the new solid |
+| Parameter | Type                          | Description                                         |
+| --------- | ----------------------------- | --------------------------------------------------- |
+| `footage` | `_ItemClasses`                | Source footage to base comp settings on             |
+| `options` | [`CompOptions`](#compoptions) | Additional configuration (name, parent folder, etc) |
 
 **Returns:**
 
-`FootageItem | false`
+`CompItem | false`
 
 **Example:**
 
 ```javascript
-// Create a white solid
-const whiteSolid = KT_Project.add.solid({
-    name: "White Background",
-    width: 1920,
-    height: 1080,
-});
-
-// Create a colored solid
-const redSolid = KT_Project.add.solid({
-    name: "Red Layer",
-    width: 1920,
-    height: 1080,
-    color: [1, 0, 0], // RGB [1, 0, 0] = Red
-});
-
-// Create a solid in a specific folder
-const blackSolid = KT_Project.add.solid({
-    name: "Black Background",
-    parentFolder: assetsFolder,
-    width: 1920,
-    height: 1080,
-    color: [0, 0, 0],
+// Create comp from video
+const comp = KT_Project.add.compFromFootage(videoItem, {
+    name: "My Video Comp",
 });
 ```
 

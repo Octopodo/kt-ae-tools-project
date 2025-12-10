@@ -24,9 +24,9 @@ The `remove` module provides utilities for removing items from the After Effects
 
 - 🗑️ **Remove individual or batch items** - Delete single or multiple items
 - 🎯 **Type-specific methods** - Remove specific item types (comps, folders, footage, etc.)
-- 🔍 **Path resolution** - Remove items using path strings
+
 - ✅ **Type validation** - Ensure correct item types before removal
-- 📊 **Flexible input** - Accept items, arrays, or path strings
+- 📊 **Flexible input** - Accept single items or arrays
 
 ---
 
@@ -38,9 +38,9 @@ Removes any items from the project.
 
 **Arguments:**
 
-| Parameter | Type                                       | Description       |
-| --------- | ------------------------------------------ | ----------------- |
-| `items`   | `_ItemClasses \| _ItemClasses[] \| string` | Item(s) to remove |
+| Parameter | Type                             | Description       |
+| --------- | -------------------------------- | ----------------- |
+| `items`   | `_ItemClasses \| _ItemClasses[]` | Item(s) to remove |
 
 **Returns:**
 
@@ -56,10 +56,6 @@ KT_Project.remove.item(comp);
 const items = [comp1, comp2, folder1];
 KT_Project.remove.item(items);
 
-// Remove using path
-const itemPath = KT_Project.path.join("CompositionToDelete");
-KT_Project.remove.item(itemPath);
-
 // Verify removal
 if (KT_Project.remove.item(item)) {
     $.writeln("Item removed successfully!");
@@ -74,9 +70,9 @@ Removes compositions from the project.
 
 **Arguments:**
 
-| Parameter | Type                                       | Description              |
-| --------- | ------------------------------------------ | ------------------------ |
-| `items`   | `_ItemClasses \| _ItemClasses[] \| string` | Composition(s) to remove |
+| Parameter | Type                             | Description              |
+| --------- | -------------------------------- | ------------------------ |
+| `items`   | `_ItemClasses \| _ItemClasses[]` | Composition(s) to remove |
 
 **Returns:**
 
@@ -91,10 +87,6 @@ KT_Project.remove.comp(mainComp);
 // Remove multiple compositions
 const comps = KT_Project.find.comps({ deep: true });
 KT_Project.remove.comp(comps);
-
-// Remove by path
-const compPath = KT_Project.path.join("Sequences", "Scene_01");
-KT_Project.remove.comp(compPath);
 ```
 
 ---
@@ -105,9 +97,9 @@ Removes folders from the project.
 
 **Arguments:**
 
-| Parameter | Type                                       | Description         |
-| --------- | ------------------------------------------ | ------------------- |
-| `items`   | `_ItemClasses \| _ItemClasses[] \| string` | Folder(s) to remove |
+| Parameter | Type                             | Description         |
+| --------- | -------------------------------- | ------------------- |
+| `items`   | `_ItemClasses \| _ItemClasses[]` | Folder(s) to remove |
 
 **Returns:**
 
@@ -136,9 +128,9 @@ Removes footage items from the project.
 
 **Arguments:**
 
-| Parameter | Type                                       | Description               |
-| --------- | ------------------------------------------ | ------------------------- |
-| `items`   | `_ItemClasses \| _ItemClasses[] \| string` | Footage item(s) to remove |
+| Parameter | Type                             | Description               |
+| --------- | -------------------------------- | ------------------------- |
+| `items`   | `_ItemClasses \| _ItemClasses[]` | Footage item(s) to remove |
 
 **Returns:**
 
@@ -163,9 +155,9 @@ Removes video footage items from the project.
 
 **Arguments:**
 
-| Parameter | Type                                       | Description             |
-| --------- | ------------------------------------------ | ----------------------- |
-| `items`   | `_ItemClasses \| _ItemClasses[] \| string` | Video item(s) to remove |
+| Parameter | Type                             | Description             |
+| --------- | -------------------------------- | ----------------------- |
+| `items`   | `_ItemClasses \| _ItemClasses[]` | Video item(s) to remove |
 
 **Returns:**
 
@@ -190,9 +182,9 @@ Removes audio footage items from the project.
 
 **Arguments:**
 
-| Parameter | Type                                       | Description             |
-| --------- | ------------------------------------------ | ----------------------- |
-| `items`   | `_ItemClasses \| _ItemClasses[] \| string` | Audio item(s) to remove |
+| Parameter | Type                             | Description             |
+| --------- | -------------------------------- | ----------------------- |
+| `items`   | `_ItemClasses \| _ItemClasses[]` | Audio item(s) to remove |
 
 **Returns:**
 
@@ -217,9 +209,9 @@ Removes image footage items from the project.
 
 **Arguments:**
 
-| Parameter | Type                                       | Description             |
-| --------- | ------------------------------------------ | ----------------------- |
-| `items`   | `_ItemClasses \| _ItemClasses[] \| string` | Image item(s) to remove |
+| Parameter | Type                             | Description             |
+| --------- | -------------------------------- | ----------------------- |
+| `items`   | `_ItemClasses \| _ItemClasses[]` | Image item(s) to remove |
 
 **Returns:**
 
@@ -244,9 +236,9 @@ Removes solid items from the project.
 
 **Arguments:**
 
-| Parameter | Type                                       | Description             |
-| --------- | ------------------------------------------ | ----------------------- |
-| `items`   | `_ItemClasses \| _ItemClasses[] \| string` | Solid item(s) to remove |
+| Parameter | Type                             | Description             |
+| --------- | -------------------------------- | ----------------------- |
+| `items`   | `_ItemClasses \| _ItemClasses[]` | Solid item(s) to remove |
 
 **Returns:**
 
@@ -304,19 +296,16 @@ KT_Project.remove.audio(unusedAudio);
 $.writeln("Cleanup complete!");
 ```
 
-### Remove Items Using Paths
+// Remove specific items
+const path1 = KT_Project.path.resolve(app.project, "//Comps//Unused_01");
+const path2 = KT_Project.path.resolve(app.project, "//Comps//Unused_02");
+const itemsToRemove = [path1, path2];
 
-```javascript
-// Remove specific items by path
-const path1 = KT_Project.path.join("Comps", "Unused_01");
-const path2 = KT_Project.path.join("Comps", "Unused_02");
-const path3 = KT_Project.path.join("Assets", "OldFootage");
-const pathsToRemove = [path1, path2, path3];
-
-for (let i = 0; i < pathsToRemove.length; i++) {
-    KT_Project.remove.item(pathsToRemove[i]);
+if (path1 && path2) {
+KT_Project.remove.item(itemsToRemove);
 }
-```
+
+````
 
 ### Remove Items Using Custom Filter
 
@@ -340,7 +329,7 @@ const largeUnusedFootage = KT_Project.find.footage({
 });
 
 KT_Project.remove.footage(largeUnusedFootage);
-```
+````
 
 ---
 

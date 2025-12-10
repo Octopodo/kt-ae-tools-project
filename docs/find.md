@@ -62,6 +62,8 @@ Searches for any items in the project matching the specified criteria.
 | `deep`          | `boolean`                                  | `false`       | Search recursively in subfolders |
 | `root`          | `FolderItem`                               | `app.project` | Root folder to start search      |
 | `check`         | `(item: _ItemClasses) => boolean`          | None          | Custom matching function         |
+| `callback`      | `(item: _ItemClasses) => void`             | None          | Function to run on found items   |
+| `relativePath`  | `string \| string[] \| RegExp \| RegExp[]` | None          | Relative path match              |
 
 **Example:**
 
@@ -346,3 +348,5 @@ const specificFootage = KT_Project.find.footage({
 | `deep`          | `boolean`                                  | `false` | Search recursively in subfolders |
 | `root`          | `FolderItem`                               | None    | Root folder to start search from |
 | `check`         | `(item: _ItemClasses) => boolean`          | None    | Custom matching function         |
+| `callback`      | `(item: _ItemClasses) => void`             | None    | Function to run on found items   |
+| `relativePath`  | `string \| string[] \| RegExp \| RegExp[]` | None    | Relative path match              |

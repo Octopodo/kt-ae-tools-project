@@ -281,18 +281,19 @@ const footage = KT_Project.import.footage({
 
 ### Import Options
 
-| Option          | Type                   | Default | Description                                    |
-| --------------- | ---------------------- | ------- | ---------------------------------------------- |
-| `path`          | `string \| string[]`   | None    | File or folder path(s) to import               |
-| `recursive`     | `boolean`              | `false` | Import nested folders                          |
-| `flat`          | `boolean`              | `false` | Import without maintaining hierarchy           |
-| `parent`        | `FolderItem \| string` | None    | Parent folder for imported items               |
-| `importAs`      | `string`               | None    | Force import type: "footage", "comp", "folder" |
-| `toComp`        | `boolean`              | `false` | Import footage as new composition              |
-| `asSequence`    | `boolean`              | `false` | Import images as sequence                      |
-| `footageFolder` | `FolderItem \| string` | None    | Folder for footage                             |
-| `compFolder`    | `FolderItem \| string` | None    | Folder for compositions                        |
-| `importOptions` | `ImportOptions`        | None    | Additional AE import options                   |
+| Option          | Type                   | Default | Description                                     |
+| --------------- | ---------------------- | ------- | ----------------------------------------------- |
+| `path`          | `string \| string[]`   | None    | File or folder path(s) to import                |
+| `recursive`     | `boolean`              | `false` | Import nested folders                           |
+| `flat`          | `boolean`              | `false` | Import without maintaining hierarchy            |
+| `parent`        | `FolderItem \| string` | None    | Parent folder for imported items                |
+| `importAs`      | `string`               | None    | Force import type: "footage", "comp", "folder"  |
+| `toComp`        | `boolean`              | `false` | Import footage as new composition               |
+| `asSequence`    | `boolean`              | `false` | Import images as sequence                       |
+| `footageFolder` | `FolderItem \| string` | None    | Folder for footage                              |
+| `compFolder`    | `FolderItem \| string` | None    | Folder for compositions                         |
+| `importOptions` | `ImportOptions`        | None    | Additional AE import options                    |
+| `returnAs`      | `string`               | None    | Return as "comp" or "comps" if `toComp` is true |
 
 ---
 
@@ -388,15 +389,16 @@ type KT_ImportParams = KT_ImportOptionsParams | string | string[];
 
 ### KT_ImportOptionsParams
 
-| Option          | Type                   | Default | Description                                    |
-| --------------- | ---------------------- | ------- | ---------------------------------------------- |
-| `path`          | `string \| string[]`   | None    | File or folder path(s) to import (required)    |
-| `recursive`     | `boolean`              | `false` | Import nested folders                          |
-| `flat`          | `boolean`              | `true`  | Import without maintaining hierarchy           |
-| `parent`        | `FolderItem \| string` | None    | Parent folder for imported items               |
-| `importAs`      | `string`               | None    | Force import type: "footage", "comp", "folder" |
-| `toComp`        | `boolean`              | `false` | Import footage as new composition              |
-| `asSequence`    | `boolean`              | `false` | Import images as sequence                      |
-| `footageFolder` | `FolderItem \| string` | None    | Folder for footage                             |
-| `compFolder`    | `FolderItem \| string` | None    | Folder for compositions                        |
-| `importOptions` | `ImportOptions`        | None    | Additional After Effects import options        |
+| Option          | Type                   | Default | Description                                     |
+| --------------- | ---------------------- | ------- | ----------------------------------------------- |
+| `path`          | `string \| string[]`   | None    | File or folder path(s) to import (required)     |
+| `recursive`     | `boolean`              | `false` | Import nested folders                           |
+| `flat`          | `boolean`              | `true`  | Import without maintaining hierarchy            |
+| `parent`        | `FolderItem \| string` | None    | Parent folder for imported items                |
+| `importAs`      | `string`               | None    | Force import type: "footage", "comp", "folder"  |
+| `toComp`        | `boolean`              | `false` | Import footage as new composition               |
+| `asSequence`    | `boolean`              | `false` | Import images as sequence                       |
+| `footageFolder` | `FolderItem \| string` | None    | Folder for footage                              |
+| `compFolder`    | `FolderItem \| string` | None    | Folder for compositions                         |
+| `importOptions` | `ImportOptions`        | None    | Additional After Effects import options         |
+| `returnAs`      | `string`               | None    | Return as "comp" or "comps" if `toComp` is true |

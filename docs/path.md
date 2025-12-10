@@ -12,6 +12,16 @@
     - [traverse()](#-traverse)
     - [getComps()](#-getcomps)
     - [getFolders()](#-getfolders)
+    - [getSeparator()](#-getseparator)
+    - [getParent()](#-getparent)
+    - [getName()](#-getname)
+    - [isAbsolute()](#-isabsolute)
+    - [normalize()](#-normalize)
+    - [getRelative()](#-getrelative)
+    - [list()](#-list)
+    - [getItem()](#-getitem)
+    - [isPath()](#-ispath)
+    - [decodeItemName()](#-decodeitemname)
 - [Common Patterns](#common-patterns)
 
 ---
@@ -300,6 +310,164 @@ const emptyFolders = KT_Project.path.getFolders(app.project, function (item) {
     return item.numItems === 0;
 });
 ```
+
+---
+
+---
+
+### 📋 getSeparator
+
+Returns the path separator used by the system ("//").
+
+**Returns:**
+
+`string`
+
+---
+
+### 📋 getParent
+
+Returns the parent path of a given path string.
+
+**Arguments:**
+
+| Parameter | Type     | Description |
+| --------- | -------- | ----------- |
+| `path`    | `string` | Path string |
+
+**Returns:**
+
+`string`
+
+---
+
+### 📋 getName
+
+Returns the last segment (name) of a path.
+
+**Arguments:**
+
+| Parameter | Type     | Description |
+| --------- | -------- | ----------- |
+| `path`    | `string` | Path string |
+
+**Returns:**
+
+`string`
+
+---
+
+### 📋 isAbsolute
+
+Checks if a path starts with the separator.
+
+**Arguments:**
+
+| Parameter | Type     | Description |
+| --------- | -------- | ----------- |
+| `path`    | `string` | Path string |
+
+**Returns:**
+
+`boolean`
+
+---
+
+### 📋 normalize
+
+Normalizes a path string, removing redundant separators.
+
+**Arguments:**
+
+| Parameter | Type     | Description |
+| --------- | -------- | ----------- |
+| `path`    | `string` | Path string |
+
+**Returns:**
+
+`string`
+
+---
+
+### 📋 getRelative
+
+Calculates a relative path from one path to another.
+
+**Arguments:**
+
+| Parameter  | Type     | Description |
+| ---------- | -------- | ----------- |
+| `fromPath` | `string` | Start path  |
+| `toPath`   | `string` | Target path |
+
+**Returns:**
+
+`string`
+
+---
+
+### 📋 list
+
+Returns a list of all item paths within a root folder.
+
+**Arguments:**
+
+| Parameter | Type                    | Description                |
+| --------- | ----------------------- | -------------------------- |
+| `root`    | `Project \| FolderItem` | Root item to list contents |
+| `prefix`  | `string`                | Optional prefix            |
+
+**Returns:**
+
+`string[]`
+
+---
+
+### 📋 getItem
+
+Shorthand to resolve a path from project root.
+
+**Arguments:**
+
+| Parameter | Type     | Description        |
+| --------- | -------- | ------------------ |
+| `path`    | `string` | Absolute item path |
+
+**Returns:**
+
+`_ItemClasses | null`
+
+---
+
+### 📋 isPath
+
+Checks if a string is a valid path format.
+
+**Arguments:**
+
+| Parameter | Type     | Description     |
+| --------- | -------- | --------------- |
+| `path`    | `string` | String to check |
+
+**Returns:**
+
+`boolean`
+
+---
+
+### 📋 decodeItemName
+
+Decodes URL-encoded characters in item names.
+
+**Arguments:**
+
+| Parameter | Type     | Description         |
+| --------- | -------- | ------------------- |
+| `name`    | `string` | Encoded name string |
+
+**Returns:**
+
+`string`
 
 ---
 

@@ -24,7 +24,7 @@ The `duplicate` module supports duplicating items within the After Effects proje
 
 - 📋 **Duplicate individual items** - Create copies while preserving properties
 - 📂 **Recursive folder duplication** - Duplicate folder structures with contents
-- 🎯 **Type-specific methods** - Duplicate specific item types
+- 🎯 **Type-specific methods** - Duplicate specific item types (Note: some specific type methods are currently placeholders)
 - 🔍 **Path resolution** - Duplicate items using path strings
 - 📊 **Batch operations** - Duplicate multiple items at once
 - 📍 **Maintain hierarchy** - Preserve folder structure in duplicated items
@@ -141,7 +141,7 @@ if (duplicates.length > 0) {
 
 ---
 
-### 📋 footage
+### 📋 footage (Not Implemented)
 
 Duplicates footage items.
 
@@ -172,7 +172,7 @@ const duplicates = KT_Project.duplicate.footage(footagePath);
 
 ---
 
-### 📋 videos
+### 📋 videos (Not Implemented)
 
 Duplicates video footage items.
 
@@ -199,7 +199,7 @@ const duplicates = KT_Project.duplicate.videos(videos);
 
 ---
 
-### 📋 audio
+### 📋 audio (Not Implemented)
 
 Duplicates audio footage items.
 
@@ -226,7 +226,7 @@ const duplicates = KT_Project.duplicate.audio(audios);
 
 ---
 
-### 📋 images
+### 📋 images (Not Implemented)
 
 Duplicates image footage items.
 
@@ -253,7 +253,7 @@ const duplicates = KT_Project.duplicate.images(images);
 
 ---
 
-### 📋 solids
+### 📋 solids (Not Implemented)
 
 Duplicates solid items.
 
