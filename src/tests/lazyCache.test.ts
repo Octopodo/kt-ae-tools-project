@@ -35,13 +35,17 @@ describe("KT_LazyCache Implementation", () => {
 
     afterEach(() => {
         // Cleanup imported items
+        // Reverse order to delete children before parents? Or parents before children?
+        // Actually, deleting parent deletes children.
+        // We just need to suppression errors if item is already gone.
         for (const item of importedItems) {
-            if (item && KT_LazyCache.getById(item.id)) {
-                // If it's still in the project/cache, remove it via project remove
-                // (which should trigger cache remove if we were using listeners, but here we do manual)
-                try {
+            try {
+                // accessing item.id checks if object is valid in AE
+                if (item.id && KT_LazyCache.getById(item.id)) {
                     item.remove();
-                } catch (e) {}
+                }
+            } catch (e) {
+                // Item probably already removed or invalid
             }
         }
         importedItems = [];
@@ -194,6 +198,80 @@ describe("KT_LazyCache Implementation", () => {
 
             expect(found1).toBe(true);
             expect(found2).toBe(true);
+        });
+    });
+    describe("update()", () => {
+        it("should update item path after move", () => {
+            const result = KT_ProjectImport.files({ path: imagePath });
+            const item = result[0] as FootageItem;
+            importedItems.push(item);
+
+            KT_LazyCache.add(item);
+            const oldPath = KT_AeProjectPath.get(item);
+
+            // Create a folder and move item into it
+            const folder = app.project.items.addFolder("MoveTarget_1");
+            importedItems.push(folder);
+            KT_LazyCache.add(folder);
+
+            item.parentFolder = folder;
+
+            // Act: Update cache
+            KT_LazyCache.update(item);
+
+            const newPath = KT_AeProjectPath.get(item);
+
+            // Verify old path gone
+            expect(KT_LazyCache.allItems.getByPath(oldPath)).toBeUndefined();
+
+            // Verify new path exists
+            expect(KT_LazyCache.allItems.getByPath(newPath)).toBeDefined();
+            expect(KT_LazyCache.allItems.getByPath(newPath)!.id).toBe(item.id);
+        });
+
+        it("should recursively update paths when folder moves", () => {
+            // Setup Structure: Root -> Parent -> Child -> Item
+            const parent = app.project.items.addFolder("ParentFolder");
+            const childList = app.project.items.addFolder("ChildFolder"); // Add to root first
+            childList.parentFolder = parent;
+
+            // Re-fetch strictly to be safe or just use reference
+            // Add items to cache
+            KT_LazyCache.add(parent);
+            KT_LazyCache.add(childList);
+
+            const result = KT_ProjectImport.files({ path: audioPath });
+            const item = result[0] as FootageItem;
+            item.parentFolder = childList;
+            importedItems.push(parent, childList, item);
+            KT_LazyCache.add(item);
+
+            const oldItemPath = KT_AeProjectPath.get(item);
+
+            // Move Parent to a new RootFolder
+            const newRoot = app.project.items.addFolder("NewRoot");
+            importedItems.push(newRoot);
+            KT_LazyCache.add(newRoot);
+
+            parent.parentFolder = newRoot;
+
+            // Act: Update Parent (should cascade)
+            KT_LazyCache.update(parent);
+
+            // Verify Item path updated automatically
+            const newItemPath = KT_AeProjectPath.get(item);
+
+            // Ensure logic: The item itself wasn't updated explicitly, so if cache is correct,
+            // getByPath(newItemPath) should return it.
+            const cachedItem = KT_LazyCache.allItems.getByPath(newItemPath);
+
+            expect(cachedItem).toBeDefined();
+            if (cachedItem) {
+                expect(cachedItem.id).toBe(item.id);
+            }
+
+            // Old path should be gone
+            expect(KT_LazyCache.allItems.getByPath(oldItemPath)).toBeUndefined();
         });
     });
 });

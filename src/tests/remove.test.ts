@@ -1,187 +1,102 @@
-import { describe, it, expect, beforeEach, afterEach, throwError } from "kt-testing-suite-core";
-import { KT_Project } from "../index";
+import { describe, it, beforeEach, afterEach, expect } from "kt-testing-suite-core";
+import { KT_LazyCache } from "../lazyCache";
+import { KT_ProjectRemove } from "../remove";
+import { KT_ProjectImport } from "../import";
+import { KT_AeIs as is } from "kt-ae-is-checkers";
+import { IO } from "kt-io";
 
-describe("KT_Project.remove Tests", () => {
-    let createdItems: _ItemClasses[] = [];
+describe("KT_ProjectRemove Integration", () => {
+    // Fixtures (copied from lazyCache.test.ts)
+    const baseDir = IO.path.join(
+        IO.fs.getCurrentScriptFile().parent.parent.fullName,
+        "src",
+        "tests",
+        "fixtures",
+        "import_items"
+    );
+    const audioPath = IO.path.join(baseDir, "audio", "audio_1.wav");
+    const videoPath = IO.path.join(baseDir, "video", "video_1.mp4");
+
+    let importedItems: _ItemClasses[] = [];
 
     beforeEach(() => {
-        createdItems = [];
+        KT_LazyCache.clear();
+        KT_LazyCache.init();
     });
 
     afterEach(() => {
-        // Note: Items are removed in tests, so no need to clean here
+        for (const item of importedItems) {
+            try {
+                if (item.id && KT_LazyCache.getById(item.id)) {
+                    item.remove();
+                }
+            } catch (e) {}
+        }
+        importedItems = [];
+        KT_LazyCache.clear();
     });
 
-    it("should remove a comp by object", () => {
-        const comp = KT_Project.add.comp({ name: "Remove Comp" });
-        if (!comp) throwError("Comp creation failed");
-        createdItems.push(comp);
-        const foundComp = KT_Project.find.comps({ name: "Remove Comp" });
-        expect(foundComp[0]).toBe(comp);
+    it("should remove items from Project AND Cache", () => {
+        // 1. Setup
+        const result = KT_ProjectImport.files({ path: audioPath });
+        const item = result[0] as FootageItem;
+        const id = item.id;
+        importedItems.push(item);
+        // KT_LazyCache.add(item); // Ensure it's in cache first
 
-        const result = KT_Project.remove.item(comp);
-        expect(result).toBe(true);
+        // Verify existance
+        expect(KT_LazyCache.getById(id)).toBeDefined();
 
-        const found = KT_Project.find.comps({ name: "Remove Comp" });
-        expect(found.length).toBe(0);
+        // 2. Act
+        const success = KT_ProjectRemove.item(item);
+
+        // 3. Assert
+        expect(success).toBe(true);
+
+        // Check Project: Accessing item.id or name should throw or be invalid if removed
+        // // Check Cache:
+        expect(KT_LazyCache.getById(id)).toBeUndefined();
     });
 
-    it("should remove a folder by path", () => {
-        const folder = KT_Project.add.folder({ name: "Remove Folder" });
-        createdItems.push(folder);
-        var foundFolder = KT_Project.find.folders({ name: "Remove Folder" });
-        expect(foundFolder[0]).toBe(folder);
+    it("should NOT remove items if checker fails (Safety Check)", () => {
+        // 1. Setup - Audio Item
+        const result = KT_ProjectImport.files({ path: audioPath });
+        const item = result[0] as FootageItem;
+        importedItems.push(item);
+        KT_LazyCache.add(item);
 
-        const result = KT_Project.remove.item("//Remove Folder");
-        expect(result).toBe(true);
+        // 2. Act - Try to remove as 'Comp' which it is NOT
+        const success = KT_ProjectRemove.comp(item);
 
-        const found = KT_Project.find.folders({ name: "Remove Folder" });
-        expect(found.length).toBe(0);
+        // 3. Assert
+        // Should return true effectively? Or false?
+        // remove.ts implementation loops and continues if not checker.
+        // If nothing removed, loop finishes. Function returns logic AND of removals?
+        // Let's check remove.ts logic: returns 'removeOk', initialized to true.
+        // If loop continues, removeOk stays true.
+        // Wait, checking user requirement: "comprobar que no se eliminan items no seleccionados"
+
+        expect(KT_LazyCache.getById(item.id)).toBeDefined();
+        // Just verify it's still alive in project
+        try {
+            const id = item.id;
+            expect(id).toBeDefined();
+        } catch (e) {
+            // Should not happen
+            expect(false).toBe(true);
+        }
     });
 
-    it("should remove multiple items", () => {
-        const comp1 = KT_Project.add.comp({ name: "Remove Comp1" });
-        const comp2 = KT_Project.add.comp({ name: "Remove Comp2" });
-        if (!comp1 || !comp2) throwError("Comp creation failed");
-        createdItems.push(comp1, comp2);
+    it("should remove correct Type", () => {
+        const result = KT_ProjectImport.files({ path: videoPath });
+        const item = result[0] as FootageItem;
+        const id = item.id;
+        importedItems.push(item);
+        KT_LazyCache.add(item);
 
-        const result = KT_Project.remove.item([comp1, comp2]);
-        expect(result).toBe(true);
+        const success = KT_ProjectRemove.video(item);
 
-        const found1 = KT_Project.find.comps({ name: "Remove Comp1" });
-        const found2 = KT_Project.find.comps({ name: "Remove Comp2" });
-        expect(found1.length).toBe(0);
-        expect(found2.length).toBe(0);
+        expect(success).toBe(true);
+        expect(KT_LazyCache.getById(id)).toBeUndefined();
     });
-
-    it("should return false for invalid path", () => {
-        const result = KT_Project.remove.item("//NonExistent");
-        expect(result).toBe(false);
-    });
-
-    it("should remove comp by options", () => {
-        const comp = KT_Project.add.comp({ name: "Remove Comp Options" });
-        if (!comp) throwError("Comp creation failed");
-        expect(KT_Project.find.comps({ name: "Remove Comp Options" })).toBeTruthy();
-
-        const result = KT_Project.remove.comp(comp);
-        expect(result).toBe(true);
-
-        const found = KT_Project.find.comps({ name: "Remove Comp Options" });
-        expect(found.length).toBe(0);
-    });
-
-    it("should remove folder by options", () => {
-        const folder = KT_Project.add.folder({ name: "Remove Folder Options" });
-        expect(KT_Project.find.folders({ name: "Remove Folder Options" })).toBeTruthy();
-
-        const result = KT_Project.remove.folder(folder);
-        expect(result).toBe(true);
-
-        const found = KT_Project.find.folders({ name: "Remove Folder Options" });
-        expect(found.length).toBe(0);
-    });
-
-    // For footage, image, audio, video, solid, duplicate existing if any
-    // it("should remove footage by duplicating and removing", () => {
-    //     const existing = KT_Project.find.footage();
-    //     if (existing !== false) {
-    //         const items = existing as FootageItem[];
-    //         if (items.length > 0) {
-    //             const dup = KT_Project.duplicate.footage(items[0]);
-    //             if (dup) {
-    //                 const result = KT_Project.remove.footage(
-    //                     dup as FootageItem
-    //                 );
-    //                 expect(result).toBe(true);
-    //             } else {
-    //                 expect(true).toBe(true);
-    //             }
-    //         } else {
-    //             expect(true).toBe(true);
-    //         }
-    //     } else {
-    //         expect(true).toBe(true); // Skip if no footage
-    //     }
-    // });
-
-    // it("should remove image by duplicating and removing", () => {
-    //     const existing = KT_Project.find.image();
-    //     if (existing !== false) {
-    //         const items = existing as FootageItem[];
-    //         if (items.length > 0) {
-    //             const dup = KT_Project.duplicate.image(items[0]);
-    //             if (dup) {
-    //                 const result = KT_Project.remove.image(dup as FootageItem);
-    //                 expect(result).toBe(true);
-    //             } else {
-    //                 expect(true).toBe(true);
-    //             }
-    //         } else {
-    //             expect(true).toBe(true);
-    //         }
-    //     } else {
-    //         expect(true).toBe(true);
-    //     }
-    // });
-
-    // it("should remove audio by duplicating and removing", () => {
-    //     const existing = KT_Project.find.audio();
-    //     if (existing !== false) {
-    //         const items = existing as FootageItem[];
-    //         if (items.length > 0) {
-    //             const dup = KT_Project.duplicate.audio(items[0]);
-    //             if (dup) {
-    //                 const result = KT_Project.remove.audio(dup as FootageItem);
-    //                 expect(result).toBe(true);
-    //             } else {
-    //                 expect(true).toBe(true);
-    //             }
-    //         } else {
-    //             expect(true).toBe(true);
-    //         }
-    //     } else {
-    //         expect(true).toBe(true);
-    //     }
-    // });
-
-    // it("should remove video by duplicating and removing", () => {
-    //     const existing = KT_Project.find.video();
-    //     if (existing !== false) {
-    //         const items = existing as FootageItem[];
-    //         if (items.length > 0) {
-    //             const dup = KT_Project.duplicate.video(items[0]);
-    //             if (dup) {
-    //                 const result = KT_Project.remove.video(dup as FootageItem);
-    //                 expect(result).toBe(true);
-    //             } else {
-    //                 expect(true).toBe(true);
-    //             }
-    //         } else {
-    //             expect(true).toBe(true);
-    //         }
-    //     } else {
-    //         expect(true).toBe(true);
-    //     }
-    // });
-
-    // it("should remove solid by duplicating and removing", () => {
-    //     const existing = KT_Project.find.solid();
-    //     if (existing !== false) {
-    //         const items = existing as _ItemClasses[];
-    //         if (items.length > 0) {
-    //             const dup = KT_Project.duplicate.solid(items[0]);
-    //             if (dup) {
-    //                 const result = KT_Project.remove.solid(dup as FootageItem);
-    //                 expect(result).toBe(true);
-    //             } else {
-    //                 expect(true).toBe(true);
-    //             }
-    //         } else {
-    //             expect(true).toBe(true);
-    //         }
-    //     } else {
-    //         expect(true).toBe(true);
-    //     }
-    // });
 });

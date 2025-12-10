@@ -7,7 +7,8 @@
 // import "./duplicate.test";
 // import "./import.test";
 // import "./render.test";
-import "./lazyCache.test";
+// import "./lazyCache.test";
+import "./remove.test";
 // import "./debug.test";
 import { KT_Core } from "kt-core";
 import { runTests } from "kt-testing-suite-core";
