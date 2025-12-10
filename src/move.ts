@@ -1,5 +1,5 @@
 import { KT_AeProjectPath } from "./path";
-
+import { KT_LazyCache as cache } from "./lazyCache";
 class __KT_ProjectMove {
     /**
      * Moves items to a specified destination folder.
@@ -43,7 +43,7 @@ class __KT_ProjectMove {
                 return false; // Move failed
             }
         }
-
+        cache.update(itemsToMove);
         return true; // All moves succeeded
     };
 }
