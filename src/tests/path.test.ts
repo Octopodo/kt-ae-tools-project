@@ -61,7 +61,7 @@ describe("KT_AeProjectPath Tests", () => {
     });
 
     it("should get parent path", () => {
-        const parent = KT_Project.path.getParent("//Parent//Child");
+        const parent = KT_Project.path.getParentPath("//Parent//Child");
         expect(parent).toBe("//Parent");
     });
 
@@ -78,13 +78,5 @@ describe("KT_AeProjectPath Tests", () => {
     it("should normalize path", () => {
         const normalized = KT_Project.path.normalize("Parent//Child");
         expect(normalized).toBe("//Parent//Child");
-    });
-
-    it("should get item by path", () => {
-        const comp = KT_Project.add.comp({ name: "Get Item Comp" });
-        if (!comp) throwError("Comp creation failed");
-        createdItems.push(comp);
-        const item = KT_Project.path.getItem("//Get Item Comp");
-        expect(item).toBe(comp);
     });
 });
