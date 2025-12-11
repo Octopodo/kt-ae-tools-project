@@ -33,7 +33,7 @@ class __KT_ProjectFind {
         },
         relativePath: (item: _ItemClasses, expectedArray: any[]) => {
             const itemFullPath = pPath.get(item);
-            const itemRelPath = pPath.getParent(itemFullPath);
+            const itemRelPath = pPath.getParentPath(itemFullPath);
             for (let i = 0; i < expectedArray.length; i++) {
                 if (itemFullPath === expectedArray[i] || itemRelPath === expectedArray[i]) return true;
             }
