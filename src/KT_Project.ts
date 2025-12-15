@@ -6,19 +6,21 @@ import { KT_ProjectRemove } from "./remove";
 import { KT_ProjectDuplicate } from "./duplicate";
 import { KT_AeProjectPath } from "./path";
 import { KT_ProjectRender } from "./render";
+import { KT_AeRename } from "./rename";
 class __KT_Project {
-    private name = "KtAeProject";
-    private version = "1.0.0";
+    private name = "KT_AeProject";
+    private version = "1.1.0";
+    public add = KT_ProjectAdd;
+    public duplicate = KT_ProjectDuplicate;
     public find = KT_ProjectFind;
     public import = KT_ProjectImport;
-    public add = KT_ProjectAdd;
     public move = KT_ProjectMove;
-    public remove = KT_ProjectRemove;
-    public duplicate = KT_ProjectDuplicate;
     public path = KT_AeProjectPath;
+    public remove = KT_ProjectRemove;
+    public rename = KT_AeRename;
     public render = KT_ProjectRender;
     constructor() {
-        $.writeln("KtAeProject constructor");
+        $.writeln("KT_AeProject constructor");
     }
 }
 
