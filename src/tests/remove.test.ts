@@ -1,5 +1,5 @@
 import { describe, it, beforeEach, afterEach, expect } from "kt-testing-suite-core";
-import { KT_LazyCache } from "../lazyCache";
+import { KT_AeCache } from "../lazyCache";
 import { KT_ProjectRemove } from "../remove";
 import { KT_ProjectImport } from "../import";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
@@ -20,20 +20,20 @@ describe("KT_ProjectRemove Integration", () => {
     let importedItems: _ItemClasses[] = [];
 
     beforeEach(() => {
-        KT_LazyCache.clear();
-        KT_LazyCache.init();
+        KT_AeCache.clear();
+        KT_AeCache.init();
     });
 
     afterEach(() => {
         for (const item of importedItems) {
             try {
-                if (item.id && KT_LazyCache.getById(item.id)) {
+                if (item.id && KT_AeCache.all().getById(item.id)) {
                     item.remove();
                 }
             } catch (e) {}
         }
         importedItems = [];
-        KT_LazyCache.clear();
+        KT_AeCache.clear();
     });
 
     it("should remove items from Project AND Cache", () => {
@@ -42,10 +42,10 @@ describe("KT_ProjectRemove Integration", () => {
         const item = result[0] as FootageItem;
         const id = item.id;
         importedItems.push(item);
-        // KT_LazyCache.add(item); // Ensure it's in cache first
+        // KT_AeCache.add(item); // Ensure it's in cache first
 
         // Verify existance
-        expect(KT_LazyCache.getById(id)).toBeDefined();
+        expect(KT_AeCache.all().getById(id)).toBeDefined();
 
         // 2. Act
         const success = KT_ProjectRemove.item(item);
@@ -55,7 +55,7 @@ describe("KT_ProjectRemove Integration", () => {
 
         // Check Project: Accessing item.id or name should throw or be invalid if removed
         // // Check Cache:
-        expect(KT_LazyCache.getById(id)).toBeUndefined();
+        expect(KT_AeCache.all().getById(id)).toBeUndefined();
     });
 
     it("should NOT remove items if checker fails (Safety Check)", () => {
@@ -63,7 +63,7 @@ describe("KT_ProjectRemove Integration", () => {
         const result = KT_ProjectImport.files({ path: audioPath });
         const item = result[0] as FootageItem;
         importedItems.push(item);
-        KT_LazyCache.add(item);
+        KT_AeCache.add(item);
 
         // 2. Act - Try to remove as 'Comp' which it is NOT
         const success = KT_ProjectRemove.comp(item);
@@ -76,7 +76,7 @@ describe("KT_ProjectRemove Integration", () => {
         // If loop continues, removeOk stays true.
         // Wait, checking user requirement: "comprobar que no se eliminan items no seleccionados"
 
-        expect(KT_LazyCache.getById(item.id)).toBeDefined();
+        expect(KT_AeCache.all().getById(item.id)).toBeDefined();
         // Just verify it's still alive in project
         try {
             const id = item.id;
@@ -92,11 +92,11 @@ describe("KT_ProjectRemove Integration", () => {
         const item = result[0] as FootageItem;
         const id = item.id;
         importedItems.push(item);
-        KT_LazyCache.add(item);
+        KT_AeCache.add(item);
 
         const success = KT_ProjectRemove.video(item);
 
         expect(success).toBe(true);
-        expect(KT_LazyCache.getById(id)).toBeUndefined();
+        expect(KT_AeCache.all().getById(id)).toBeUndefined();
     });
 });

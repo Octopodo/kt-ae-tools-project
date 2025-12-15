@@ -1,13 +1,14 @@
 // Regex for "UniqueAudioFile_.*"
 import { describe, it, beforeEach, afterEach, expect } from "kt-testing-suite-core";
-import { KT_LazyCache } from "../lazyCache";
+import { KT_AeCache } from "../lazyCache";
 import { KT_ProjectImport } from "../import";
 import { KT_ProjectRemove } from "../remove";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
 import { IO } from "kt-io";
 import { KT_AeProjectPath } from "../path";
+import { KT_ProjectMove } from "../move";
 
-describe("KT_LazyCache Implementation", () => {
+describe("KT_AeCache Implementation", () => {
     // Paths to fixtures
     const baseDir = IO.path.join(
         IO.fs.getCurrentScriptFile().parent.parent.fullName,
@@ -24,7 +25,7 @@ describe("KT_LazyCache Implementation", () => {
 
     beforeEach(() => {
         // Ensure cache is clean before each test
-        KT_LazyCache.clear();
+        KT_AeCache.clear();
         // Also ensure project doesn't have leftover items from failed previous runs
         for (let i = app.project.numItems; i >= 1; i--) {
             // Be careful not to delete things if the user has an open project,
@@ -41,45 +42,44 @@ describe("KT_LazyCache Implementation", () => {
         for (const item of importedItems) {
             try {
                 // accessing item.id checks if object is valid in AE
-                if (item.id && KT_LazyCache.getById(item.id)) {
-                    item.remove();
-                }
+                KT_AeCache.remove(item);
+                item.remove();
             } catch (e) {
                 // Item probably already removed or invalid
             }
         }
         importedItems = [];
-        KT_LazyCache.clear();
+        KT_AeCache.clear();
     });
 
     it("should initialize and scan the project", () => {
-        KT_LazyCache.init();
-        expect(KT_LazyCache["_initialized"]).toBe(true);
+        KT_AeCache.init();
+        expect(KT_AeCache["_initialized"]).toBe(true);
     });
 
     describe("add()", () => {
-        it("should add an audio item to allItems and audio cache", () => {
+        it("should add an audio item to all and audio cache", () => {
             // 1. Import item (bypassing cache auto-add if any)
             const result = KT_ProjectImport.files({ path: audioPath });
             const item = result[0] as FootageItem;
             importedItems.push(item);
 
             // 2. Add to LazyCache
-            KT_LazyCache.add(item);
+            KT_AeCache.add(item);
 
             // 3. Verify in Global Cache
-            const inGlobal = KT_LazyCache.allItems.getById(item.id);
+            const inGlobal = KT_AeCache.all().getById(item.id);
             expect(inGlobal).toBeDefined();
             expect(inGlobal!.id).toBe(item.id);
 
             // 4. Verify in Audio Cache (accessing public property as per current state)
-            const inAudio = KT_LazyCache.audio.getById(item.id);
+            const inAudio = KT_AeCache.audio().getById(item.id);
             expect(inAudio).toBeDefined();
             expect(inAudio!.id).toBe(item.id);
 
             // 5. Verify NOT in other caches
-            expect(KT_LazyCache.video.getById(item.id)).toBeUndefined();
-            expect(KT_LazyCache.comps.getById(item.id)).toBeUndefined();
+            expect(KT_AeCache.video().getById(item.id)).toBeUndefined();
+            expect(KT_AeCache.comps().getById(item.id)).toBeUndefined();
         });
 
         it("should correctly calculate path when adding without known path", () => {
@@ -87,10 +87,10 @@ describe("KT_LazyCache Implementation", () => {
             const item = result[0] as FootageItem;
             importedItems.push(item);
 
-            KT_LazyCache.add(item);
+            KT_AeCache.add(item);
 
             const expectedPath = KT_AeProjectPath.get(item);
-            const cachedItem = KT_LazyCache.allItems.getByPath(expectedPath);
+            const cachedItem = KT_AeCache.all().getByPath(expectedPath);
 
             expect(cachedItem).toBeDefined();
             expect(cachedItem!.id).toBe(item.id);
@@ -100,10 +100,10 @@ describe("KT_LazyCache Implementation", () => {
             const folder = app.project.items.addFolder("LazyTestFolder");
             importedItems.push(folder);
 
-            KT_LazyCache.add(folder);
+            KT_AeCache.add(folder);
 
-            expect(KT_LazyCache.folders.getById(folder.id)).toBeDefined();
-            expect(KT_LazyCache.allItems.getById(folder.id)).toBeDefined();
+            expect(KT_AeCache.folders().getById(folder.id)).toBeDefined();
+            expect(KT_AeCache.all().getById(folder.id)).toBeDefined();
         });
     });
 
@@ -113,31 +113,31 @@ describe("KT_LazyCache Implementation", () => {
             const result = KT_ProjectImport.files({ path: videoPath });
             const item = result[0] as FootageItem;
             importedItems.push(item);
-            KT_LazyCache.add(item);
+            KT_AeCache.add(item);
 
             // Verify added
-            expect(KT_LazyCache.video.getById(item.id)).toBeDefined();
+            expect(KT_AeCache.video().getById(item.id)).toBeDefined();
 
             // Act
-            KT_LazyCache.remove(item);
+            KT_AeCache.remove(item);
 
             // Assert
-            expect(KT_LazyCache.allItems.getById(item.id)).toBeUndefined();
-            expect(KT_LazyCache.video.getById(item.id)).toBeUndefined();
+            expect(KT_AeCache.all().getById(item.id)).toBeUndefined();
+            expect(KT_AeCache.video().getById(item.id)).toBeUndefined();
         });
 
         it("should clean up path index upon removal", () => {
             const result = KT_ProjectImport.files({ path: imagePath });
             const item = result[0] as FootageItem;
             importedItems.push(item);
-            KT_LazyCache.add(item);
+            KT_AeCache.add(item);
 
             const path = KT_AeProjectPath.get(item);
-            expect(KT_LazyCache.allItems.getByPath(path)).toBeDefined();
+            expect(KT_AeCache.all().getByPath(path)).toBeDefined();
 
-            KT_LazyCache.remove(item);
+            KT_AeCache.remove(item);
 
-            expect(KT_LazyCache.allItems.getByPath(path)).toBeUndefined();
+            expect(KT_AeCache.all().getByPath(path)).toBeUndefined();
         });
     });
 
@@ -148,17 +148,17 @@ describe("KT_LazyCache Implementation", () => {
             const image = KT_ProjectImport.files({ path: imagePath })[0] as FootageItem;
             importedItems.push(audio, video, image);
 
-            KT_LazyCache.add(audio);
-            KT_LazyCache.add(video);
-            KT_LazyCache.add(image);
+            KT_AeCache.add(audio);
+            KT_AeCache.add(video);
+            KT_AeCache.add(image);
 
-            expect(KT_LazyCache.audio.getById(audio.id)).toBeDefined();
-            expect(KT_LazyCache.video.getById(audio.id)).toBeUndefined();
+            expect(KT_AeCache.audio().getById(audio.id)).toBeDefined();
+            expect(KT_AeCache.video().getById(audio.id)).toBeUndefined();
 
-            expect(KT_LazyCache.video.getById(video.id)).toBeDefined();
-            expect(KT_LazyCache.audio.getById(video.id)).toBeUndefined();
+            expect(KT_AeCache.video().getById(video.id)).toBeDefined();
+            expect(KT_AeCache.audio().getById(video.id)).toBeUndefined();
 
-            expect(KT_LazyCache.images.getById(image.id)).toBeDefined();
+            expect(KT_AeCache.images().getById(image.id)).toBeDefined();
         });
     });
 
@@ -170,16 +170,15 @@ describe("KT_LazyCache Implementation", () => {
             // Rename for unique test
             const audio1 = KT_ProjectImport.files({ path: audioPath })[0];
             audio1.name = itemName1;
+            KT_AeCache.rename(audio1, itemName1);
             const audio2 = KT_ProjectImport.files({ path: audioPath })[0];
             audio2.name = itemName2;
+            KT_AeCache.rename(audio2, itemName2);
             importedItems.push(audio1, audio2);
 
-            KT_LazyCache.add(audio1);
-            KT_LazyCache.add(audio2);
-
             // Regex for "UniqueAudioFile_.*"
-            const regex = /UniqueAudioFile_.*\./;
-            const results = KT_LazyCache.allItems.getByRegExp(regex);
+            const regex = /UniqueAudioFile/;
+            const results = KT_AeCache.all().getByRegExp(regex);
 
             expect(results.length).toBeGreaterThanOrEqual(2);
 
@@ -206,64 +205,62 @@ describe("KT_LazyCache Implementation", () => {
             const item = result[0] as FootageItem;
             importedItems.push(item);
 
-            KT_LazyCache.add(item);
             const oldPath = KT_AeProjectPath.get(item);
 
             // Create a folder and move item into it
             const folder = app.project.items.addFolder("MoveTarget_1");
             importedItems.push(folder);
-            KT_LazyCache.add(folder);
+            KT_AeCache.add(folder);
 
-            item.parentFolder = folder;
+            KT_ProjectMove.move(item, folder);
 
             // Act: Update cache
-            KT_LazyCache.update(item);
+            // KT_AeCache.update(item);
 
             const newPath = KT_AeProjectPath.get(item);
 
             // Verify old path gone
-            expect(KT_LazyCache.allItems.getByPath(oldPath)).toBeUndefined();
+            expect(KT_AeCache.all().getByPath(oldPath)).toBeUndefined();
 
             // Verify new path exists
-            expect(KT_LazyCache.allItems.getByPath(newPath)).toBeDefined();
-            expect(KT_LazyCache.allItems.getByPath(newPath)!.id).toBe(item.id);
+            expect(KT_AeCache.all().getByPath(newPath)).toBeDefined();
+            expect(KT_AeCache.all().getByPath(newPath)!.id).toBe(item.id);
         });
 
         it("should recursively update paths when folder moves", () => {
             // Setup Structure: Root -> Parent -> Child -> Item
             const parent = app.project.items.addFolder("ParentFolder");
             const childList = app.project.items.addFolder("ChildFolder"); // Add to root first
-            childList.parentFolder = parent;
+            KT_ProjectMove.move(childList, parent);
 
             // Re-fetch strictly to be safe or just use reference
             // Add items to cache
-            KT_LazyCache.add(parent);
-            KT_LazyCache.add(childList);
+            KT_AeCache.add(parent);
+            KT_AeCache.add(childList);
 
             const result = KT_ProjectImport.files({ path: audioPath });
             const item = result[0] as FootageItem;
-            item.parentFolder = childList;
+            KT_ProjectMove.move(item, childList);
             importedItems.push(parent, childList, item);
-            KT_LazyCache.add(item);
 
             const oldItemPath = KT_AeProjectPath.get(item);
 
             // Move Parent to a new RootFolder
             const newRoot = app.project.items.addFolder("NewRoot");
             importedItems.push(newRoot);
-            KT_LazyCache.add(newRoot);
+            KT_AeCache.add(newRoot);
 
-            parent.parentFolder = newRoot;
+            KT_ProjectMove.move(parent, newRoot);
 
             // Act: Update Parent (should cascade)
-            KT_LazyCache.update(parent);
+            // KT_AeCache.update(parent);
 
             // Verify Item path updated automatically
             const newItemPath = KT_AeProjectPath.get(item);
 
             // Ensure logic: The item itself wasn't updated explicitly, so if cache is correct,
             // getByPath(newItemPath) should return it.
-            const cachedItem = KT_LazyCache.allItems.getByPath(newItemPath);
+            const cachedItem = KT_AeCache.all().getByPath(newItemPath);
 
             expect(cachedItem).toBeDefined();
             if (cachedItem) {
@@ -271,7 +268,7 @@ describe("KT_LazyCache Implementation", () => {
             }
 
             // Old path should be gone
-            expect(KT_LazyCache.allItems.getByPath(oldItemPath)).toBeUndefined();
+            expect(KT_AeCache.all().getByPath(oldItemPath)).toBeUndefined();
         });
     });
 });
