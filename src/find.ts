@@ -1,7 +1,7 @@
-import { KT_StringUtils, KT_FilterChainFactory } from "kt-core";
+import { KT_StringUtils, KT_FilterChainFactory, KT_CacheStore } from "kt-core";
 import { KT_AeProjectPath as pPath } from "./path";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
-import { KT_LazyCache, KT_CacheStore } from "./lazyCache";
+import { KT_AeCache } from "./lazyCache";
 
 type FindProjectOptionParams = {
     name?: string | string[] | RegExp | RegExp[];
@@ -65,40 +65,39 @@ class __KT_ProjectFind {
     });
 
     items = (options: FindProjectParams | number | string): _ItemClasses[] => {
-        return this.__findItems(KT_LazyCache.allItems, options);
+        return this.__findItems(KT_AeCache.all(), options);
     };
 
     folders = (options: FindProjectParams | number | string): FolderItem[] => {
-        return this.__findItems(KT_LazyCache.folders, options) as FolderItem[];
+        return this.__findItems(KT_AeCache.folders(), options) as FolderItem[];
     };
 
     comps = (options: FindProjectParams | number | string): CompItem[] => {
-        return this.__findItems(KT_LazyCache.comps, options) as CompItem[];
+        return this.__findItems(KT_AeCache.comps(), options) as CompItem[];
     };
 
     footage = (options: FindProjectParams | number | string): FootageItem[] => {
-        return this.__findItems(KT_LazyCache.footage, options) as FootageItem[];
+        return this.__findItems(KT_AeCache.footage(), options) as FootageItem[];
     };
 
     audios = (options: FindProjectParams | number | string): FootageItem[] => {
-        return this.__findItems(KT_LazyCache.audio, options) as FootageItem[];
+        return this.__findItems(KT_AeCache.audio(), options) as FootageItem[];
     };
 
     videos = (options: FindProjectParams | number | string): FootageItem[] => {
-        return this.__findItems(KT_LazyCache.video, options) as FootageItem[];
+        return this.__findItems(KT_AeCache.video(), options) as FootageItem[];
     };
 
     images = (options: FindProjectParams | number | string): FootageItem[] => {
-        return this.__findItems(KT_LazyCache.images, options) as FootageItem[];
+        return this.__findItems(KT_AeCache.images(), options) as FootageItem[];
     };
 
     solids = (options: FindProjectParams | number | string): FootageItem[] => {
-        KT_LazyCache.scanSolids();
-        return this.__findItems(KT_LazyCache.solids, options) as FootageItem[];
+        return this.__findItems(KT_AeCache.solids(), options) as FootageItem[];
     };
 
     private __findItems = <T extends _ItemClasses>(cacheStore: KT_CacheStore<T>, options: FindProjectParams): T[] => {
-        KT_LazyCache.init();
+        KT_AeCache.init();
 
         if (!options) return [];
 
