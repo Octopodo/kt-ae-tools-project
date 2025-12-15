@@ -34,7 +34,5 @@ const KT_AePathAdapter: KT_IPathAdapter<_ItemClasses> = {
     },
 };
 
-class __KT_AeProjectPath {}
-
 const KT_AeProjectPath = new KT_ProjectPath<_ItemClasses>(KT_AePathAdapter);
 export { KT_AeProjectPath };
