@@ -2,3 +2,4 @@ node_modules/
 dist/
 dist.test/
 src/tests/fixtures/
+package-lock.json
