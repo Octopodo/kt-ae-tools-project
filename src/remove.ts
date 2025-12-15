@@ -1,6 +1,6 @@
 import { KT_AeProjectPath as path } from "./path";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
-import { KT_LazyCache as cache } from "./lazyCache";
+import { KT_AeCache as cache } from "./lazyCache";
 class __KT_ProjectRemove {
     /**
      * Removes items from the project.
