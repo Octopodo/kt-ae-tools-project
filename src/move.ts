@@ -1,5 +1,5 @@
 import { KT_AeProjectPath } from "./path";
-import { KT_LazyCache as cache } from "./lazyCache";
+import { KT_AeCache as cache } from "./lazyCache";
 class __KT_ProjectMove {
     /**
      * Moves items to a specified destination folder.
