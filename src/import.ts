@@ -4,7 +4,7 @@ import { KT_ProjectAdd as add } from "./add";
 import { aeExtensions } from ".//aeExtensionValidators";
 import { KT_ProjectFind as find } from "./find";
 import { KT_AeProjectPath } from "./path";
-import { KT_LazyCache as cache } from "./lazyCache";
+import { KT_AeCache as cache } from "./lazyCache";
 type KT_ImportOptionsParams = {
     path: string | string[]; // Path on disk to import from
     recursive?: boolean; // Whether to import folders recursively
@@ -189,7 +189,7 @@ class __KT_ProjectImport {
                 if (tempOptions.toComp && importOptions.importAs !== ImportAsType.COMP && is.footage(importedItem)) {
                     const compName = KT_Path.stripFileExtension(importedItem.name) || "Comp";
                     const comp = add.compFromFootage(importedItem, {
-                        name: KT_AeProjectPath.decodeItemName(compName),
+                        name: decodeURI(compName),
                         parentFolder: typeof tempOptions.compFolder === "string" ? tempOptions.compFolder : undefined,
                     });
                     if (comp) {
