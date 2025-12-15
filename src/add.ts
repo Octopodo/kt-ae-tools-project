@@ -3,7 +3,7 @@ import { KT_ProjectMove as move } from "./move";
 import { KT_AeIs as is } from "kt-ae-is-checkers";
 import { KT_ProjectFind as find } from "./find";
 import { KT_AeProjectPath } from "./path";
-import { KT_LazyCache as cache } from "./lazyCache";
+import { KT_AeCache as cache } from "./lazyCache";
 
 type CompOptions = {
     name: string;
@@ -118,7 +118,7 @@ class __KT_ProjectAdd {
 
     compFromFootage = (footage: _ItemClasses, options: CompOptions): CompItem | false => {
         if (!is.footage(footage) && !is.comp(footage)) return false;
-        options.name = options.name || KT_AeProjectPath.decodeItemName(path.stripFileExtension(footage.name) || "Comp");
+        options.name = options.name || decodeURI(path.stripFileExtension(footage.name) || "Comp");
         options.width = footage.width;
         options.height = footage.height;
         options.pixelAspect = footage.pixelAspect;
