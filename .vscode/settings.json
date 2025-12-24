@@ -1,4 +1,5 @@
 {
+    "kt.launchConfigName": "Debug Build & Run Tests",
     "prettier.tabWidth": 4,
     "prettier.useTabs": false,
     "prettier.printWidth": 120,

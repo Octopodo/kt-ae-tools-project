@@ -1,5 +1,5 @@
 import { it, describe, beforeAll, afterAll, expect } from "kt-testing-suite-core";
-import { KT_LazyCache } from "../lazyCache";
+import { KT_AeCache } from "../lazyCache";
 import { KT_ProjectFind } from "../find";
 import { KT_Project } from "../index";
 
@@ -50,7 +50,7 @@ describe("Performance Benchmark", () => {
 
     it("Benchmark: Scan Performance", () => {
         const start = Date.now();
-        KT_LazyCache.scan();
+        KT_AeCache.scan();
         const end = Date.now();
         const duration = end - start;
         $.writeln(`    ⏱️[Benchmark] Scan ${NUM_ITEMS} items took: ${duration}ms`);
@@ -103,8 +103,8 @@ describe("Performance Benchmark", () => {
     });
 
     it("Solids: Should be ignored in main scan but found in find.solids", () => {
-        KT_LazyCache.scan();
-        const solidsInCache = KT_LazyCache.folders.getByName("Solids");
+        KT_AeCache.scan();
+        const solidsInCache = KT_AeCache.folders().getByName("Solids");
         expect(solidsInCache.length).toBe(0);
         const solids = KT_ProjectFind.solids({});
     });
